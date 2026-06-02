@@ -9,6 +9,9 @@ val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
     namespace = "com.template.android.core.network"
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {

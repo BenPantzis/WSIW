@@ -27,7 +27,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                // Core
                 "implementation"(libs.findLibrary("androidx-core-ktx").get())
                 "implementation"(libs.findLibrary("androidx-lifecycle-runtime-ktx").get())
                 "implementation"(libs.findLibrary("androidx-activity-compose").get())
@@ -37,10 +36,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 "implementation"(libs.findLibrary("androidx-lifecycle-viewmodel-navigation3").get())
                 "implementation"(libs.findLibrary("kotlinx-serialization-core").get())
 
-                // Unit tests
                 "testImplementation"(libs.findLibrary("junit").get())
 
-                // Instrumented tests
                 "androidTestImplementation"(libs.findLibrary("androidx-junit").get())
                 "androidTestImplementation"(libs.findLibrary("androidx-espresso-core").get())
                 "androidTestImplementation"(platform(libs.findLibrary("androidx-compose-bom").get()))

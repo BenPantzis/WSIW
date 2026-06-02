@@ -18,4 +18,5 @@ dependencies {
     implementation(project(":core:core-database"))
     implementation(catalog.findLibrary("coroutines-android").get())
     implementation(catalog.findLibrary("retrofit-core").get())
+    implementation(catalog.findLibrary("timber").get())
 }

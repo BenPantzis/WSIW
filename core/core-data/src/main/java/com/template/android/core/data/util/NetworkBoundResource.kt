@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 
 /**
  * Emits Loading, then either fetches from network + saves locally, or serves the cached value.
@@ -23,6 +24,7 @@ inline fun <Local, Network> networkBoundResource(
         try {
             saveFetchResult(fetch())
         } catch (t: Throwable) {
+            Timber.e(t, "Network fetch failed, serving stale cache")
             emitAll(query().map { Result.Error(t) })
             return@flow
         }

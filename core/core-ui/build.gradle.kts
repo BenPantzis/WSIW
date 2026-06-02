@@ -23,4 +23,5 @@ dependencies {
     debugImplementation(catalog.findLibrary("androidx-compose-ui-tooling").get())
 
     implementation(catalog.findLibrary("coil-compose").get())
+    api(catalog.findLibrary("timber").get())
 }

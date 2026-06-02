@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.template.android.core.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,8 +23,8 @@ class HomeViewModel @Inject constructor() : BaseViewModel<HomeAction, HomeEvent,
 
     private fun loadContent() {
         viewModelScope.launch {
+            Timber.d("loadContent")
             updateState { copy(isLoading = true) }
-            // TODO: inject and call use case
             updateState { copy(isLoading = false, message = "Hello, World!") }
         }
     }

@@ -11,4 +11,5 @@ abstract class UseCase<in P, out R>(private val dispatchers: AppDispatchers) {
     protected abstract suspend fun execute(params: P): R
 }
 
+// Pass to use cases that take no input: invoke(NoParams)
 object NoParams
