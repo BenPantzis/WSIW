@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base activity theme — used as postSplashScreenTheme -->
+    <style name="Theme.AndroidTemplate" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash screen theme — set on the activity in AndroidManifest.xml -->
+    <style name="Theme.AndroidTemplate.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.AndroidTemplate</item>
+    </style>
+
+</resources>

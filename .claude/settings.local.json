@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew assembleDebug)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew assembleDebug)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew assembleDebug --info)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew assembleDebug --stacktrace)",
+      "WebSearch",
+      "Bash(dir \"Z:\\\\AndroidProjects\\\\AndroidTemplate\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(Get-ChildItem \"Z:\\\\AndroidProjects\\\\AndroidTemplate\" -Recurse -File)",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "Bash(Select-Object -First 20)",
+      "Bash(Format-Table LastWriteTime, FullName -AutoSize)",
+      "Bash(Get-ChildItem -Path \"Z:\\\\AndroidProjects\\\\AndroidTemplate\" -Recurse -Filter \"*.gradle.kts\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(xargs ls -la)",
+      "Bash(Remove-Item *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git rm *)"
+    ]
+  }
+}
