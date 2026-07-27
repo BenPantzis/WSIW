@@ -1,4 +1,5 @@
-﻿import org.gradle.api.artifacts.VersionCatalogsExtension
+import java.util.Properties
+import org.gradle.api.artifacts.VersionCatalogsExtension
 
 plugins {
     id("template.android.application")
@@ -8,6 +9,12 @@ plugins {
 
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
+val localProps = Properties().also { props ->
+    val f = rootProject.file("local.properties")
+    if (f.exists()) props.load(f.inputStream())
+}
+val tmdbAccessToken: String = localProps.getProperty("tmdb.access.token", "")
+
 android {
     namespace = "com.bsp.wsiw"
 
@@ -15,6 +22,7 @@ android {
         applicationId = "com.bsp.wsiw"
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "TMDB_ACCESS_TOKEN", "\"$tmdbAccessToken\"")
     }
 
     buildTypes {
@@ -33,11 +41,11 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            buildConfigField("String", "BASE_URL", "\"https://dev.api.example.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.themoviedb.org/3/\"")
         }
         create("prod") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.themoviedb.org/3/\"")
         }
     }
 }
