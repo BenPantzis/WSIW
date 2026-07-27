@@ -1,10 +1,10 @@
 package com.bsp.wsiw.core.data.movie
 
 import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.data.remote.TmdbApiService
 import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.repository.MovieRepository
-import com.bsp.wsiw.core.network.TmdbApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

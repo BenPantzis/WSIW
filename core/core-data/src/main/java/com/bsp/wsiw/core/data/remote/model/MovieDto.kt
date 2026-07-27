@@ -1,4 +1,4 @@
-package com.bsp.wsiw.core.network.model
+package com.bsp.wsiw.core.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 

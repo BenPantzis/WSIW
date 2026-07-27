@@ -1,6 +1,6 @@
-package com.bsp.wsiw.core.network
+package com.bsp.wsiw.core.data.remote
 
-import com.bsp.wsiw.core.network.model.MovieListResponseDto
+import com.bsp.wsiw.core.data.remote.model.MovieListResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 

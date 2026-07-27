@@ -1,7 +1,6 @@
-﻿package com.bsp.wsiw.core.network.di
+package com.bsp.wsiw.core.network.di
 
 import com.bsp.wsiw.core.network.BuildConfig
-import com.bsp.wsiw.core.network.TmdbApiService
 import com.bsp.wsiw.core.network.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -43,9 +42,4 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-    @Provides
-    @Singleton
-    fun provideTmdbApiService(retrofit: Retrofit): TmdbApiService =
-        retrofit.create(TmdbApiService::class.java)
 }
