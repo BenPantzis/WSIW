@@ -1,10 +1,9 @@
-﻿package com.bsp.wsiw.core.common
+package com.bsp.wsiw.core.common
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import javax.inject.Inject
 
-data class AppDispatchers @Inject constructor(
+data class AppDispatchers(
     val io: CoroutineDispatcher = Dispatchers.IO,
     val default: CoroutineDispatcher = Dispatchers.Default,
     val main: CoroutineDispatcher = Dispatchers.Main,

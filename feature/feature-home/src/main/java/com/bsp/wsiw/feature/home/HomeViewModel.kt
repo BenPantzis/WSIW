@@ -29,7 +29,7 @@ class HomeViewModel @Inject constructor(
     private fun loadMovies() {
         viewModelScope.launch {
             updateState { copy(isLoading = true, error = null) }
-            getPopularMovies(page = 1).collect { result ->
+            getPopularMovies(1).collect { result ->
                 when (result) {
                     is Result.Success -> updateState { copy(isLoading = false, movies = result.data) }
                     is Result.Error -> updateState {
