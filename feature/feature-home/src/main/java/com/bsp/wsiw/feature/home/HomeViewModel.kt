@@ -1,37 +1,50 @@
-﻿package com.bsp.wsiw.feature.home
+package com.bsp.wsiw.feature.home
 
 import androidx.lifecycle.viewModelScope
+import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.domain.usecase.GetPopularMoviesUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : BaseViewModel<HomeAction, HomeEvent, HomeUiState>(
+class HomeViewModel @Inject constructor(
+    private val getPopularMovies: GetPopularMoviesUseCase,
+) : BaseViewModel<HomeAction, HomeEvent, HomeUiState>(
     initialState = HomeUiState(),
 ) {
     init {
-        onAction(HomeAction.LoadContent)
+        onAction(HomeAction.LoadMovies)
     }
 
     override fun handleAction(action: HomeAction) {
         when (action) {
-            HomeAction.LoadContent -> loadContent()
+            HomeAction.LoadMovies -> loadMovies()
+            HomeAction.Retry -> loadMovies()
         }
     }
 
-    private fun loadContent() {
+    private fun loadMovies() {
         viewModelScope.launch {
-            Timber.d("loadContent")
-            updateState { copy(isLoading = true) }
-            updateState { copy(isLoading = false, message = "Hello, World!") }
+            updateState { copy(isLoading = true, error = null) }
+            getPopularMovies(page = 1).collect { result ->
+                when (result) {
+                    is Result.Success -> updateState { copy(isLoading = false, movies = result.data) }
+                    is Result.Error -> updateState {
+                        copy(isLoading = false, error = result.exception?.message ?: "Something went wrong")
+                    }
+                    Result.Loading -> Unit
+                }
+            }
         }
     }
 }
 
 sealed interface HomeAction {
-    data object LoadContent : HomeAction
+    data object LoadMovies : HomeAction
+    data object Retry : HomeAction
 }
 
 sealed interface HomeEvent {
@@ -40,5 +53,6 @@ sealed interface HomeEvent {
 
 data class HomeUiState(
     val isLoading: Boolean = true,
-    val message: String = "",
+    val movies: List<Movie> = emptyList(),
+    val error: String? = null,
 )
