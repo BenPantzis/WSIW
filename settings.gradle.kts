@@ -1,4 +1,4 @@
-pluginManagement {
+﻿pluginManagement {
     includeBuild("build-logic")
     repositories {
         google {
@@ -17,6 +17,11 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+// Workaround for https://github.com/gradle/gradle/issues/28407 â€”
+// Android Studio's "Rebuild" action injects testClasses for included builds, which
+// deadlocks against clean in Gradle 9.x's composite build scheduler.
+gradle.startParameter.excludedTaskNames.addAll(listOf(":build-logic:convention:testClasses"))
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -25,7 +30,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndroidTemplate"
+rootProject.name = "WSIW"
 
 include(":app")
 include(":core:core-common")

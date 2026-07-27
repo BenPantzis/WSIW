@@ -1,4 +1,4 @@
-import org.gradle.api.artifacts.VersionCatalogsExtension
+﻿import org.gradle.api.artifacts.VersionCatalogsExtension
 
 plugins {
     id("template.android.library")
@@ -7,7 +7,7 @@ plugins {
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
-    namespace = "com.template.android.core.domain"
+    namespace = "com.bsp.wsiw.core.domain"
 }
 
 dependencies {

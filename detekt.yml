@@ -1,0 +1,75 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+  CommentOverPrivateFunction:
+    active: false
+  CommentOverPrivateProperty:
+    active: false
+
+complexity:
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+  LongMethod:
+    active: true
+    threshold: 80
+    excludes: ['**/*Screen.kt', '**/*Content.kt']
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 25
+    thresholdInClasses: 20
+    excludes: ['**/*Screen.kt', '**/*ViewModel.kt']
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+
+naming:
+  FunctionNaming:
+    active: true
+    # Composable functions use PascalCase — exclude them from the lowercase rule.
+    ignoreAnnotated: ['Composable']
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+  TopLevelPropertyNaming:
+    active: false
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludeCommentStatements: true
+  WildcardImport:
+    active: true
+  UnusedPrivateMember:
+    active: true
+  ReturnCount:
+    active: true
+    max: 4
+  UseCheckOrError:
+    active: false
+
+formatting:
+  active: true
+  android: true
+  AnnotationOnSeparateLine:
+    active: false
+  MaximumLineLength:
+    active: false
+  TrailingCommaOnCallSite:
+    active: false
+  TrailingCommaOnDeclarationSite:
+    active: false

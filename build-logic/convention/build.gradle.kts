@@ -1,11 +1,11 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
 }
 
-group = "com.template.android.buildlogic"
+group = "com.bsp.wsiw.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -22,6 +22,7 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.detekt.gradlePlugin)
 }
 
 gradlePlugin {
@@ -41,6 +42,10 @@ gradlePlugin {
         register("androidHilt") {
             id = "template.android.hilt"
             implementationClass = "HiltConventionPlugin"
+        }
+        register("detekt") {
+            id = "template.detekt"
+            implementationClass = "DetektConventionPlugin"
         }
     }
 }

@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -9,6 +10,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("com.android.application")
+            pluginManager.apply("io.gitlab.arturbosch.detekt")
 
             extensions.configure<ApplicationExtension> {
                 compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
@@ -26,7 +28,13 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 }
             }
 
+            extensions.configure<DetektExtension> {
+                buildUponDefaultConfig = true
+                config.setFrom(rootProject.files("detekt.yml"))
+            }
+
             dependencies {
+                "detektPlugins"(libs.findLibrary("detekt-formatting").get())
                 "implementation"(libs.findLibrary("androidx-core-ktx").get())
                 "implementation"(libs.findLibrary("androidx-lifecycle-runtime-ktx").get())
                 "implementation"(libs.findLibrary("androidx-activity-compose").get())

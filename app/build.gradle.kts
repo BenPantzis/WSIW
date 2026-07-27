@@ -1,4 +1,4 @@
-import org.gradle.api.artifacts.VersionCatalogsExtension
+﻿import org.gradle.api.artifacts.VersionCatalogsExtension
 
 plugins {
     id("template.android.application")
@@ -9,10 +9,10 @@ plugins {
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
-    namespace = "com.template.android"
+    namespace = "com.bsp.wsiw"
 
     defaultConfig {
-        applicationId = "com.template.android"
+        applicationId = "com.bsp.wsiw"
         versionCode = 1
         versionName = "1.0"
     }
@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":core:core-ui"))
     implementation(project(":core:core-common"))
     implementation(project(":core:core-network"))
+    implementation(project(":core:core-datastore"))
     implementation(project(":feature:feature-home"))
 
     implementation(catalog.findLibrary("timber").get())
