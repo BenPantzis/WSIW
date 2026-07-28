@@ -10,6 +10,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object HomeKey : NavKey
 
-fun EntryProviderScope<NavKey>.homeDestination() {
-    entry<HomeKey> { HomeScreen() }
+fun EntryProviderScope<NavKey>.homeDestination(onMovieClick: (Int) -> Unit) {
+    entry<HomeKey> { HomeScreen(onMovieClick = onMovieClick) }
 }

@@ -57,6 +57,12 @@ dependencies {
     implementation(project(":core:core-data"))
     implementation(project(":core:core-datastore"))
     implementation(project(":feature:feature-home"))
+    implementation(project(":feature:feature-detail"))
+    implementation(project(":feature:feature-search"))
+    implementation(project(":feature:feature-watchlist"))
+
+    implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
+    implementation("androidx.compose.material:material-icons-core")
 
     implementation(catalog.findLibrary("timber").get())
     implementation(catalog.findLibrary("androidx-core-splashscreen").get())

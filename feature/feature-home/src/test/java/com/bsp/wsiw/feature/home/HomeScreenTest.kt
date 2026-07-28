@@ -37,7 +37,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             WSIWTheme {
                 HomeContent(
-                    uiState = HomeUiState(isLoading = false, message = "Hello, World!"),
+                    uiState = HomeUiState(isLoading = false),
                     onAction = {},
                 )
             }

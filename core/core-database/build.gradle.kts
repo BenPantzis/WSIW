@@ -17,6 +17,7 @@ ksp {
 }
 
 dependencies {
+    implementation(project(":core:core-domain"))
     implementation(catalog.findLibrary("room-runtime").get())
     implementation(catalog.findLibrary("room-ktx").get())
     ksp(catalog.findLibrary("room-compiler").get())

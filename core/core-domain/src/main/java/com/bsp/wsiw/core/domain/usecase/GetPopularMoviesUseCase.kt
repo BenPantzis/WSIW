@@ -11,7 +11,10 @@ import javax.inject.Inject
 class GetPopularMoviesUseCase @Inject constructor(
     private val repository: MovieRepository,
     dispatchers: AppDispatchers,
-) : FlowUseCase<Int, List<Movie>>(dispatchers) {
-    override fun execute(params: Int): Flow<Result<List<Movie>>> =
-        repository.getPopularMovies(page = params)
+) : FlowUseCase<GetPopularMoviesUseCase.Params, List<Movie>>(dispatchers) {
+
+    data class Params(val page: Int, val forceRefresh: Boolean = false)
+
+    override fun execute(params: Params): Flow<Result<List<Movie>>> =
+        repository.getPopularMovies(page = params.page, forceRefresh = params.forceRefresh)
 }

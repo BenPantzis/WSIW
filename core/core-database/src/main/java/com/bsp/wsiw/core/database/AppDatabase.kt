@@ -1,12 +1,66 @@
-﻿package com.bsp.wsiw.core.database
+package com.bsp.wsiw.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.bsp.wsiw.core.database.entity.PlaceholderEntity
+import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.bsp.wsiw.core.database.converter.Converters
+import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
+import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
+import com.bsp.wsiw.core.database.dao.WatchlistDao
+import com.bsp.wsiw.core.database.entity.MovieDetailEntity
+import com.bsp.wsiw.core.database.entity.PopularMovieEntity
+import com.bsp.wsiw.core.database.entity.WatchlistEntity
 
 @Database(
-    entities = [PlaceholderEntity::class],
-    version = 1,
+    entities = [WatchlistEntity::class, PopularMovieEntity::class, MovieDetailEntity::class],
+    version = 2,
     exportSchema = true,
 )
-abstract class AppDatabase : RoomDatabase()
+@TypeConverters(Converters::class)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun watchlistDao(): WatchlistDao
+    abstract fun popularMovieCacheDao(): PopularMovieCacheDao
+    abstract fun movieDetailCacheDao(): MovieDetailCacheDao
+
+    companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `popular_movies_cache` (
+                        `id` INTEGER NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `overview` TEXT NOT NULL,
+                        `posterUrl` TEXT,
+                        `backdropUrl` TEXT,
+                        `releaseDate` TEXT NOT NULL,
+                        `voteAverage` REAL NOT NULL,
+                        `voteCount` INTEGER NOT NULL,
+                        `page` INTEGER NOT NULL,
+                        `cachedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )""",
+                )
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `movie_detail_cache` (
+                        `id` INTEGER NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `overview` TEXT NOT NULL,
+                        `posterUrl` TEXT,
+                        `backdropUrl` TEXT,
+                        `releaseDate` TEXT NOT NULL,
+                        `voteAverage` REAL NOT NULL,
+                        `voteCount` INTEGER NOT NULL,
+                        `tagline` TEXT NOT NULL,
+                        `genres` TEXT NOT NULL,
+                        `runtime` INTEGER NOT NULL,
+                        `originalLanguage` TEXT NOT NULL,
+                        `cachedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )""",
+                )
+            }
+        }
+    }
+}

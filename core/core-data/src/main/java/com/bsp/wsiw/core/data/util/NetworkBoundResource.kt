@@ -1,4 +1,4 @@
-﻿package com.bsp.wsiw.core.data.util
+package com.bsp.wsiw.core.data.util
 
 import com.bsp.wsiw.core.common.Result
 import kotlinx.coroutines.flow.Flow
@@ -8,10 +8,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
-/**
- * Emits Loading, then either fetches from network + saves locally, or serves the cached value.
- * Feature repositories call this to implement an offline-first strategy.
- */
 @Suppress("TooGenericExceptionCaught")
 inline fun <Local, Network> networkBoundResource(
     crossinline query: () -> Flow<Local>,
@@ -22,6 +18,8 @@ inline fun <Local, Network> networkBoundResource(
     emit(Result.Loading)
     val cached = query().first()
     if (shouldFetch(cached)) {
+        // Serve stale cache immediately so the UI renders while the network request is in-flight
+        emit(Result.Success(cached, isRefreshing = true))
         try {
             saveFetchResult(fetch())
         } catch (t: Throwable) {
