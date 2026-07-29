@@ -10,6 +10,7 @@ import com.bsp.wsiw.core.database.entity.toDomain
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
+import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -43,15 +44,17 @@ class MovieRepositoryImpl @Inject constructor(
             }
         }
 
-    override fun getMoviesByCategory(category: String, page: Int): Flow<Result<List<Movie>>> = flow {
+    override fun getMoviesByCategory(category: String, page: Int): Flow<Result<PagedResult<Movie>>> = flow {
         emit(safeApiCall {
-            when (category) {
+            val response = when (category) {
+                "popular" -> apiService.getPopularMovies(page)
                 "trending" -> apiService.getTrendingMovies(page)
                 "top_rated" -> apiService.getTopRatedMovies(page)
                 "now_playing" -> apiService.getNowPlayingMovies(page)
                 "upcoming" -> apiService.getUpcomingMovies(page)
                 else -> throw IllegalArgumentException("Unknown category: $category")
-            }.results.map { it.toDomain() }
+            }
+            PagedResult(items = response.results.map { it.toDomain() }, totalPages = response.totalPages)
         })
     }
 
@@ -59,8 +62,11 @@ class MovieRepositoryImpl @Inject constructor(
         emit(safeApiCall { apiService.getGenres().genres.map { Genre(id = it.id, name = it.name) } })
     }
 
-    override fun discoverMovies(genreId: Int, page: Int): Flow<Result<List<Movie>>> = flow {
-        emit(safeApiCall { apiService.discoverMovies(genreId, page).results.map { it.toDomain() } })
+    override fun discoverMovies(genreId: Int, page: Int): Flow<Result<PagedResult<Movie>>> = flow {
+        emit(safeApiCall {
+            val response = apiService.discoverMovies(genreId, page)
+            PagedResult(items = response.results.map { it.toDomain() }, totalPages = response.totalPages)
+        })
     }
 
     override fun searchMovies(query: String, page: Int): Flow<Result<List<Movie>>> = flow {

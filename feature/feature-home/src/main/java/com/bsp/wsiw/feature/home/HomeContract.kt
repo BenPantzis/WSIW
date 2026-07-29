@@ -16,6 +16,7 @@ sealed interface HomeAction {
     data object LoadMovies : HomeAction
     data object Retry : HomeAction
     data object Refresh : HomeAction
+    data object LoadNextPage : HomeAction
     data class SelectCategory(val category: HomeCategory) : HomeAction
     data class SelectGenre(val genreId: Int) : HomeAction
 }
@@ -34,4 +35,9 @@ data class HomeUiState(
     val genres: List<Genre> = emptyList(),
     val selectedGenreId: Int? = null,
     val isGenresLoading: Boolean = false,
-)
+    val currentPage: Int = 1,
+    val totalPages: Int = Int.MAX_VALUE,
+    val isLoadingMore: Boolean = false,
+) {
+    val canLoadMore get() = !isLoading && !isLoadingMore && currentPage < totalPages
+}

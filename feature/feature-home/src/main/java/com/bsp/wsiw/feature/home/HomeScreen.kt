@@ -14,11 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
@@ -28,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -115,7 +119,10 @@ internal fun HomeContent(
                 ) {
                     MovieGrid(
                         movies = uiState.movies,
+                        isLoadingMore = uiState.isLoadingMore,
+                        canLoadMore = uiState.canLoadMore,
                         onMovieClick = onMovieClick,
+                        onLoadMore = { onAction(HomeAction.LoadNextPage) },
                         bottomPadding = padding.calculateBottomPadding(),
                     )
                     if (uiState.isRefreshing) {
@@ -226,12 +233,29 @@ private fun ShimmerPosterCard(modifier: Modifier = Modifier) {
 @Composable
 private fun MovieGrid(
     movies: List<Movie>,
+    isLoadingMore: Boolean,
+    canLoadMore: Boolean,
     onMovieClick: (Int) -> Unit,
+    onLoadMore: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
     val spacing = AppTheme.spacing
+    val gridState = rememberLazyGridState()
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = gridState.layoutInfo.totalItemsCount
+            canLoadMore && total > 0 && lastVisible >= total - 4
+        }
+    }
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) onLoadMore()
+    }
+
     LazyVerticalGrid(
+        state = gridState,
         columns = GridCells.Adaptive(minSize = 160.dp),
         contentPadding = PaddingValues(
             start = spacing.md,
@@ -245,6 +269,22 @@ private fun MovieGrid(
     ) {
         items(movies, key = { it.id }) { movie ->
             MoviePosterCard(movie = movie, onClick = { onMovieClick(movie.id) })
+        }
+        if (isLoadingMore) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        color = Color(0xFFE8A020),
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.padding(4.dp),
+                    )
+                }
+            }
         }
     }
 }

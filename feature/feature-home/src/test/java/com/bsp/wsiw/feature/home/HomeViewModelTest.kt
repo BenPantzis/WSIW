@@ -2,14 +2,13 @@ package com.bsp.wsiw.feature.home
 
 import app.cash.turbine.test
 import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.repository.MovieRepository
-import com.bsp.wsiw.core.domain.usecase.GetPopularMoviesUseCase
 import com.bsp.wsiw.core.testing.MainDispatcherRule
 import com.bsp.wsiw.core.testing.fakeMovie
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -25,15 +24,18 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val getPopularMovies: GetPopularMoviesUseCase = mockk()
     private val movieRepository: MovieRepository = mockk(relaxed = true)
 
-    private fun createViewModel() = HomeViewModel(getPopularMovies, movieRepository)
+    private fun createViewModel() = HomeViewModel(movieRepository)
+
+    private fun pagedSuccess(vararg movies: com.bsp.wsiw.core.domain.model.Movie, totalPages: Int = 1) =
+        flowOf(Result.Success(PagedResult(items = movies.toList(), totalPages = totalPages)))
 
     @Test
     fun `success populates movies and clears loading`() {
         val movies = listOf(fakeMovie(id = 1), fakeMovie(id = 2))
-        every { getPopularMovies(any()) } returns flowOf(Result.Success(movies))
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
 
         val vm = createViewModel()
 
@@ -44,9 +46,8 @@ class HomeViewModelTest {
 
     @Test
     fun `error without cached movies sets error string`() {
-        every { getPopularMovies(any()) } returns flowOf(
-            Result.Error(RuntimeException("Network error"))
-        )
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Error(RuntimeException("Network error")))
 
         val vm = createViewModel()
 
@@ -57,7 +58,8 @@ class HomeViewModelTest {
 
     @Test
     fun `error with null message uses fallback`() {
-        every { getPopularMovies(any()) } returns flowOf(Result.Error(null))
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Error(null))
 
         val vm = createViewModel()
 
@@ -68,8 +70,8 @@ class HomeViewModelTest {
     fun `error with cached movies sends snackbar and preserves movies`() = runTest {
         val movies = listOf(fakeMovie())
         var callCount = 0
-        every { getPopularMovies(any()) } answers {
-            if (callCount++ == 0) flowOf(Result.Success(movies))
+        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+            if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
             else flowOf(Result.Error(RuntimeException("No connection")))
         }
 
@@ -84,48 +86,87 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `refresh passes forceRefresh = true to use case`() {
+    fun `refresh calls repository a second time`() {
         val movies = listOf(fakeMovie())
-        val capturedParams = mutableListOf<GetPopularMoviesUseCase.Params>()
-        every { getPopularMovies(any()) } answers {
-            capturedParams.add(firstArg())
-            flowOf(Result.Success(movies))
-        }
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
 
         val vm = createViewModel()
         vm.onAction(HomeAction.Refresh)
 
-        assertTrue(capturedParams.any { it.forceRefresh })
+        verify(atLeast = 2) { movieRepository.getMoviesByCategory(any(), any()) }
     }
 
     @Test
-    fun `retry calls use case a second time`() {
-        every { getPopularMovies(any()) } returns flowOf(Result.Success(emptyList()))
+    fun `retry calls repository a second time`() {
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Success(PagedResult(items = emptyList(), totalPages = 1)))
 
         val vm = createViewModel()
         vm.onAction(HomeAction.Retry)
 
-        verify(exactly = 2) { getPopularMovies(any()) }
+        verify(atLeast = 2) { movieRepository.getMoviesByCategory(any(), any()) }
     }
 
     @Test
-    fun `empty success with isRefreshing stays in shimmer`() {
-        every { getPopularMovies(any()) } returns flowOf(
-            Result.Success(data = emptyList(), isRefreshing = true)
-        )
+    fun `load next page appends movies`() {
+        val page1 = listOf(fakeMovie(id = 1), fakeMovie(id = 2))
+        val page2 = listOf(fakeMovie(id = 3), fakeMovie(id = 4))
+        var callCount = 0
+        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+            if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = page1, totalPages = 5)))
+            else flowOf(Result.Success(PagedResult(items = page2, totalPages = 5)))
+        }
 
         val vm = createViewModel()
+        assertEquals(page1, vm.uiState.value.movies)
+        assertEquals(1, vm.uiState.value.currentPage)
 
-        assertTrue(vm.uiState.value.isLoading)
+        vm.onAction(HomeAction.LoadNextPage)
+
+        assertEquals(page1 + page2, vm.uiState.value.movies)
+        assertEquals(2, vm.uiState.value.currentPage)
+    }
+
+    @Test
+    fun `load next page is no-op when already at last page`() {
+        val movies = listOf(fakeMovie())
+        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+            flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
+
+        val vm = createViewModel()
+        vm.onAction(HomeAction.LoadNextPage)
+
+        // Still only 1 call (initial load); LoadNextPage guarded by canLoadMore
+        verify(exactly = 1) { movieRepository.getMoviesByCategory(any(), any()) }
+    }
+
+    @Test
+    fun `category switch resets movies and page`() {
+        val popularMovies = listOf(fakeMovie(id = 1))
+        val trendingMovies = listOf(fakeMovie(id = 2))
+        var callCount = 0
+        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+            if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = popularMovies, totalPages = 1)))
+            else flowOf(Result.Success(PagedResult(items = trendingMovies, totalPages = 1)))
+        }
+
+        val vm = createViewModel()
+        assertEquals(popularMovies, vm.uiState.value.movies)
+
+        vm.onAction(HomeAction.SelectCategory(HomeCategory.Trending))
+
+        assertEquals(trendingMovies, vm.uiState.value.movies)
+        assertEquals(1, vm.uiState.value.currentPage)
     }
 
     @Test
     fun `success after loading clears error from previous attempt`() {
         val movies = listOf(fakeMovie())
         var callCount = 0
-        every { getPopularMovies(any()) } answers {
+        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
             if (callCount++ == 0) flowOf(Result.Error(RuntimeException("fail")))
-            else flowOf(Result.Success(movies))
+            else flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
         }
 
         val vm = createViewModel()

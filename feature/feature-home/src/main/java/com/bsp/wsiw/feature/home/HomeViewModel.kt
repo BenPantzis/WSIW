@@ -2,9 +2,7 @@ package com.bsp.wsiw.feature.home
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.repository.MovieRepository
-import com.bsp.wsiw.core.domain.usecase.GetPopularMoviesUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -12,10 +10,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.bsp.wsiw.core.domain.model.PagedResult
+import com.bsp.wsiw.core.domain.model.Movie
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getPopularMovies: GetPopularMoviesUseCase,
     private val movieRepository: MovieRepository,
 ) : BaseViewModel<HomeAction, HomeEvent, HomeUiState>(
     initialState = HomeUiState(),
@@ -28,11 +27,17 @@ class HomeViewModel @Inject constructor(
 
     override fun handleAction(action: HomeAction) {
         when (action) {
-            HomeAction.LoadMovies -> loadMovies()
-            HomeAction.Retry -> loadMovies()
+            HomeAction.LoadMovies -> loadPage(page = 1, replace = true)
+            HomeAction.Retry -> loadPage(page = 1, replace = true)
             HomeAction.Refresh -> {
                 updateState { copy(isPullRefreshing = true) }
-                loadMovies(forceRefresh = true)
+                loadPage(page = 1, replace = true)
+            }
+            HomeAction.LoadNextPage -> {
+                val state = uiState.value
+                if (state.canLoadMore) {
+                    loadPage(page = state.currentPage + 1, replace = false)
+                }
             }
             is HomeAction.SelectCategory -> {
                 if (uiState.value.selectedCategory == action.category) return
@@ -42,74 +47,77 @@ class HomeViewModel @Inject constructor(
                         movies = emptyList(),
                         error = null,
                         isLoading = true,
+                        currentPage = 1,
+                        totalPages = Int.MAX_VALUE,
                     )
                 }
                 if (action.category == HomeCategory.ByGenre) {
                     loadGenresIfNeeded()
                 } else {
-                    loadMovies()
+                    loadPage(page = 1, replace = true)
                 }
             }
             is HomeAction.SelectGenre -> {
-                updateState { copy(selectedGenreId = action.genreId, movies = emptyList(), isLoading = true) }
-                loadMovies()
+                updateState {
+                    copy(selectedGenreId = action.genreId, movies = emptyList(), isLoading = true, currentPage = 1, totalPages = Int.MAX_VALUE)
+                }
+                loadPage(page = 1, replace = true)
             }
         }
     }
 
-    private fun moviesSource(forceRefresh: Boolean): Flow<Result<List<Movie>>> {
+    private fun pageSource(page: Int): Flow<Result<PagedResult<Movie>>> {
         val state = uiState.value
         return when {
             state.selectedCategory == HomeCategory.ByGenre && state.selectedGenreId != null ->
-                movieRepository.discoverMovies(state.selectedGenreId)
+                movieRepository.discoverMovies(state.selectedGenreId, page)
             state.selectedCategory == HomeCategory.ByGenre ->
-                flow { }  // waiting for genre selection
-            state.selectedCategory == HomeCategory.Popular ->
-                getPopularMovies(GetPopularMoviesUseCase.Params(page = 1, forceRefresh = forceRefresh))
+                flow { }
             else ->
-                movieRepository.getMoviesByCategory(state.selectedCategory.apiKey!!)
+                movieRepository.getMoviesByCategory(state.selectedCategory.apiKey ?: "popular", page)
         }
     }
 
-    private fun loadMovies(forceRefresh: Boolean = false) {
+    private fun loadPage(page: Int, replace: Boolean) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            moviesSource(forceRefresh).collect { result ->
+            if (replace) {
+                updateState { copy(isLoading = movies.isEmpty(), isLoadingMore = false) }
+            } else {
+                updateState { copy(isLoadingMore = true) }
+            }
+            pageSource(page).collect { result ->
                 when (result) {
-                    Result.Loading -> updateState {
-                        copy(isLoading = movies.isEmpty(), error = null, isRefreshing = false)
-                    }
                     is Result.Success -> {
-                        val movies = result.data
-                        if (movies.isEmpty() && result.isRefreshing) {
-                            updateState { copy(isLoading = true, isRefreshing = false) }
-                        } else {
-                            updateState {
-                                copy(
-                                    isLoading = false,
-                                    movies = movies,
-                                    error = null,
-                                    isRefreshing = result.isRefreshing,
-                                    isPullRefreshing = result.isRefreshing && isPullRefreshing,
-                                )
-                            }
+                        val paged = result.data
+                        updateState {
+                            copy(
+                                isLoading = false,
+                                isLoadingMore = false,
+                                isPullRefreshing = false,
+                                movies = if (replace) paged.items else movies + paged.items,
+                                error = null,
+                                currentPage = page,
+                                totalPages = paged.totalPages,
+                            )
                         }
                     }
                     is Result.Error -> {
                         if (uiState.value.movies.isNotEmpty()) {
-                            updateState { copy(isRefreshing = false, isPullRefreshing = false) }
-                            sendEvent(HomeEvent.ShowSnackbar("Couldn't refresh — showing cached data"))
+                            updateState { copy(isLoadingMore = false, isPullRefreshing = false) }
+                            if (replace) sendEvent(HomeEvent.ShowSnackbar("Couldn't refresh — showing cached data"))
                         } else {
                             updateState {
                                 copy(
                                     isLoading = false,
-                                    isRefreshing = false,
+                                    isLoadingMore = false,
                                     isPullRefreshing = false,
                                     error = result.exception?.message ?: "Something went wrong",
                                 )
                             }
                         }
                     }
+                    Result.Loading -> Unit
                 }
             }
         }
@@ -121,7 +129,7 @@ class HomeViewModel @Inject constructor(
             val firstId = state.selectedGenreId ?: state.genres.firstOrNull()?.id
             if (firstId != null) {
                 updateState { copy(selectedGenreId = firstId, isLoading = true) }
-                loadMovies()
+                loadPage(page = 1, replace = true)
             }
             return
         }
@@ -132,13 +140,9 @@ class HomeViewModel @Inject constructor(
                     is Result.Success -> {
                         val firstId = result.data.firstOrNull()?.id
                         updateState {
-                            copy(
-                                genres = result.data,
-                                isGenresLoading = false,
-                                selectedGenreId = firstId,
-                            )
+                            copy(genres = result.data, isGenresLoading = false, selectedGenreId = firstId)
                         }
-                        if (firstId != null) loadMovies()
+                        if (firstId != null) loadPage(page = 1, replace = true)
                     }
                     is Result.Error -> updateState { copy(isGenresLoading = false, isLoading = false) }
                     Result.Loading -> Unit
