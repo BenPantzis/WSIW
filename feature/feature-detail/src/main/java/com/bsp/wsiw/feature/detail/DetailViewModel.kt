@@ -9,6 +9,7 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
@@ -29,6 +30,7 @@ class DetailViewModel @AssistedInject constructor(
     private val getMovieDetail: GetMovieDetailUseCase,
     private val isWatchlisted: IsWatchlistedUseCase,
     private val toggleWatchlist: ToggleWatchlistUseCase,
+    private val movieRepository: MovieRepository,
     @ApplicationContext private val context: Context,
 ) : BaseViewModel<DetailAction, DetailEvent, DetailUiState>(
     initialState = DetailUiState(),
@@ -42,6 +44,7 @@ class DetailViewModel @AssistedInject constructor(
 
     init {
         loadDetail()
+        loadReviewPreview()
         viewModelScope.launch {
             isWatchlisted(movieId).collect { watchlisted ->
                 updateState { copy(isWatchlisted = watchlisted) }
@@ -68,6 +71,22 @@ class DetailViewModel @AssistedInject constructor(
                         ),
                         isWatchlisted = uiState.value.isWatchlisted,
                     )
+                }
+            }
+        }
+    }
+
+    private fun loadReviewPreview() {
+        viewModelScope.launch {
+            movieRepository.getMovieReviews(movieId, page = 1).collect { result ->
+                if (result is Result.Success) {
+                    updateState {
+                        copy(
+                            previewReviews = result.data.items.take(3),
+                            totalReviewCount = result.data.items.size +
+                                ((result.data.totalPages - 1) * 20),
+                        )
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.bsp.wsiw.feature.detail
 
 import com.bsp.wsiw.core.domain.model.MovieDetail
+import com.bsp.wsiw.core.domain.model.Review
 
 sealed interface DetailAction {
     data object Retry : DetailAction
@@ -18,4 +19,6 @@ data class DetailUiState(
     val accentArgb: Int? = null,
     val isWatchlisted: Boolean = false,
     val isRefreshing: Boolean = false,
+    val previewReviews: List<Review> = emptyList(),
+    val totalReviewCount: Int = 0,
 )

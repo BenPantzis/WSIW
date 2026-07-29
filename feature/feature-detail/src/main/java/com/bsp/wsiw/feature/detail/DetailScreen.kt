@@ -66,6 +66,7 @@ import com.bsp.wsiw.core.domain.model.CastMember
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
+import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.model.VideoEntry
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
@@ -143,6 +144,8 @@ internal fun DetailContent(
             onMovieClick = onMovieClick,
             onPersonClick = onPersonClick,
             onReviewsClick = onReviewsClick,
+            previewReviews = uiState.previewReviews,
+            totalReviewCount = uiState.totalReviewCount,
             accentArgb = uiState.accentArgb,
             isWatchlisted = uiState.isWatchlisted,
             onToggleWatchlist = { onAction(DetailAction.ToggleWatchlist) },
@@ -161,6 +164,8 @@ private fun CollapsingDetailContent(
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
+    previewReviews: List<Review>,
+    totalReviewCount: Int,
     accentArgb: Int?,
     isWatchlisted: Boolean,
     onToggleWatchlist: () -> Unit,
@@ -195,7 +200,7 @@ private fun CollapsingDetailContent(
                 scrollFraction = scrollFraction,
                 backdropHeightPx = backdropHeightPx,
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick)
+            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
                 onClick = onToggleWatchlist,
@@ -274,6 +279,8 @@ private fun ContentList(
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
+    previewReviews: List<Review>,
+    totalReviewCount: Int,
 ) {
     LazyColumn(
         state = listState,
@@ -283,7 +290,7 @@ private fun ContentList(
             Spacer(modifier = Modifier.height(BackdropHeight - ContentOverlap))
         }
         item {
-            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick)
+            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
         }
     }
 }
@@ -371,7 +378,14 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
 // --- Detail card content ---
 
 @Composable
-private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onPersonClick: (Int) -> Unit, onReviewsClick: (movieId: Int, movieTitle: String) -> Unit) {
+private fun MovieDetailCard(
+    movie: MovieDetail,
+    onMovieClick: (Int) -> Unit,
+    onPersonClick: (Int) -> Unit,
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
+    previewReviews: List<Review>,
+    totalReviewCount: Int,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = ContentOverlap, topEnd = ContentOverlap),
@@ -471,14 +485,17 @@ private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onP
                 }
             }
 
-            // Reviews teaser
-            Spacer(Modifier.height(AppTheme.spacing.xl))
-            ReviewsTeaser(
-                movieId = movie.id,
-                movieTitle = movie.title,
-                onReviewsClick = onReviewsClick,
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
+            // Reviews
+            if (previewReviews.isNotEmpty()) {
+                Spacer(Modifier.height(AppTheme.spacing.xl))
+                InlineReviewsSection(
+                    movieId = movie.id,
+                    movieTitle = movie.title,
+                    reviews = previewReviews,
+                    totalCount = totalReviewCount,
+                    onReviewsClick = onReviewsClick,
+                )
+            }
         }
     }
 }
@@ -774,29 +791,88 @@ private fun DetailLoadingContent(onBack: () -> Unit) {
 }
 
 @Composable
-private fun ReviewsTeaser(
+private fun InlineReviewsSection(
     movieId: Int,
     movieTitle: String,
+    reviews: List<Review>,
+    totalCount: Int,
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
+    val spacing = AppTheme.spacing
     val accent = LocalAccentColor.current
-    OutlinedButton(
-        onClick = { onReviewsClick(movieId, movieTitle) },
-        modifier = modifier.fillMaxWidth(),
-        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.7f)),
+    val countLabel = if (totalCount > 0) " ($totalCount)" else ""
+
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        SectionHeader("Reviews$countLabel")
+        Spacer(Modifier.height(spacing.md))
+        reviews.forEach { review ->
+            InlineReviewCard(review = review)
+            Spacer(Modifier.height(spacing.md))
+        }
+        Spacer(Modifier.height(spacing.xs))
+        OutlinedButton(
+            onClick = { onReviewsClick(movieId, movieTitle) },
+            modifier = Modifier.fillMaxWidth(),
+            border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.7f)),
+        ) {
+            Text(
+                text = "See all reviews",
+                color = accent,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = accent,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun InlineReviewCard(review: Review) {
+    val spacing = AppTheme.spacing
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), MaterialTheme.shapes.medium)
+            .padding(spacing.md),
     ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = review.author,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    text = formatTmdbDate(review.createdAt.take(10)),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (review.rating != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "★", color = GoldDefault, style = MaterialTheme.typography.labelMedium)
+                    Spacer(Modifier.width(2.dp))
+                    Text(
+                        text = "${review.rating}/10",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(spacing.sm))
         Text(
-            text = "Read Reviews",
-            color = accent,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = null,
-            tint = accent,
-            modifier = Modifier.size(16.dp),
+            text = review.content,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
         )
     }
 }
