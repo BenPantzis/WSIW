@@ -95,6 +95,10 @@ class HomeViewModel @Inject constructor(
                                 isLoading = false,
                                 isLoadingMore = false,
                                 isPullRefreshing = false,
+                                // TMDB uses offset pagination on a live-ranked list, so
+                                // popularity shifts between requests can place the same
+                                // movie on two consecutive pages. Dedup by ID to prevent
+                                // LazyVerticalGrid from crashing on a repeated key.
                                 movies = if (replace) paged.items else {
                                     val seen = movies.mapTo(HashSet()) { it.id }
                                     movies + paged.items.filter { it.id !in seen }
