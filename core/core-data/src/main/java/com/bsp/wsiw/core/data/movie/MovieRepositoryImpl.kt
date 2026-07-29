@@ -12,6 +12,7 @@ import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.PersonDetail
+import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -91,6 +92,28 @@ class MovieRepositoryImpl @Inject constructor(
                     ?.take(20)
                     ?.map { it.toDomain() }
                     ?: emptyList(),
+            )
+        })
+    }
+
+    override fun getMovieReviews(movieId: Int, page: Int): Flow<Result<PagedResult<Review>>> = flow {
+        emit(safeApiCall {
+            val response = apiService.getMovieReviews(movieId, page)
+            PagedResult(
+                items = response.results.map { dto ->
+                    Review(
+                        id = dto.id,
+                        author = dto.author,
+                        avatarUrl = dto.authorDetails.avatarPath?.let {
+                            val path = if (it.startsWith("/https")) it.removePrefix("/") else it
+                            "https://image.tmdb.org/t/p/w185$path"
+                        },
+                        rating = dto.authorDetails.rating,
+                        content = dto.content,
+                        createdAt = dto.createdAt,
+                    )
+                },
+                totalPages = response.totalPages,
             )
         })
     }

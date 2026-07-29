@@ -52,8 +52,10 @@ import androidx.navigation3.ui.NavDisplay
 import com.bsp.wsiw.core.ui.theme.WSIWTheme
 import com.bsp.wsiw.feature.detail.navigation.DetailKey
 import com.bsp.wsiw.feature.detail.navigation.PersonKey
+import com.bsp.wsiw.feature.detail.navigation.ReviewsKey
 import com.bsp.wsiw.feature.detail.navigation.detailDestination
 import com.bsp.wsiw.feature.detail.navigation.personDestination
+import com.bsp.wsiw.feature.detail.navigation.reviewsDestination
 import com.bsp.wsiw.feature.home.navigation.HomeKey
 import com.bsp.wsiw.feature.home.navigation.homeDestination
 import com.bsp.wsiw.feature.search.navigation.SearchKey
@@ -181,6 +183,10 @@ private fun WsiwApp() {
         backStack.add(PersonKey(personId))
     }
 
+    fun navigateToReviews(movieId: Int, movieTitle: String) {
+        backStack.add(ReviewsKey(movieId, movieTitle))
+    }
+
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
@@ -235,11 +241,13 @@ private fun WsiwApp() {
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
                     onPersonClick = ::navigateToPerson,
+                    onReviewsClick = ::navigateToReviews,
                 )
                 personDestination(
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
                 )
+                reviewsDestination(onBack = { backStack.removeLastOrNull() })
             },
             modifier = Modifier
                 .padding(bottom = innerPadding.calculateBottomPadding())

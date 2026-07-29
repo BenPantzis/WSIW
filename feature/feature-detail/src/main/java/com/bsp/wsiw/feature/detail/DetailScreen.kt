@@ -28,8 +28,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -84,6 +86,7 @@ fun DetailScreen(
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit = {},
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit = { _, _ -> },
     viewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory>(
         creationCallback = { it.create(movieId) },
     ),
@@ -105,6 +108,7 @@ fun DetailScreen(
         onBack = onBack,
         onMovieClick = onMovieClick,
         onPersonClick = onPersonClick,
+        onReviewsClick = onReviewsClick,
         snackbarHostState = snackbarHostState,
     )
 }
@@ -116,6 +120,7 @@ internal fun DetailContent(
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit = {},
     onPersonClick: (Int) -> Unit = {},
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit = { _, _ -> },
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     when {
@@ -137,6 +142,7 @@ internal fun DetailContent(
             onBack = onBack,
             onMovieClick = onMovieClick,
             onPersonClick = onPersonClick,
+            onReviewsClick = onReviewsClick,
             accentArgb = uiState.accentArgb,
             isWatchlisted = uiState.isWatchlisted,
             onToggleWatchlist = { onAction(DetailAction.ToggleWatchlist) },
@@ -154,6 +160,7 @@ private fun CollapsingDetailContent(
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
     accentArgb: Int?,
     isWatchlisted: Boolean,
     onToggleWatchlist: () -> Unit,
@@ -188,7 +195,7 @@ private fun CollapsingDetailContent(
                 scrollFraction = scrollFraction,
                 backdropHeightPx = backdropHeightPx,
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick)
+            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick)
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
                 onClick = onToggleWatchlist,
@@ -266,6 +273,7 @@ private fun ContentList(
     listState: LazyListState,
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
 ) {
     LazyColumn(
         state = listState,
@@ -275,7 +283,7 @@ private fun ContentList(
             Spacer(modifier = Modifier.height(BackdropHeight - ContentOverlap))
         }
         item {
-            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick)
+            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick)
         }
     }
 }
@@ -363,7 +371,7 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
 // --- Detail card content ---
 
 @Composable
-private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onPersonClick: (Int) -> Unit) {
+private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onPersonClick: (Int) -> Unit, onReviewsClick: (movieId: Int, movieTitle: String) -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = ContentOverlap, topEnd = ContentOverlap),
@@ -462,6 +470,15 @@ private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onP
                     }
                 }
             }
+
+            // Reviews teaser
+            Spacer(Modifier.height(AppTheme.spacing.xl))
+            ReviewsTeaser(
+                movieId = movie.id,
+                movieTitle = movie.title,
+                onReviewsClick = onReviewsClick,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
         }
     }
 }
@@ -753,6 +770,34 @@ private fun DetailLoadingContent(onBack: () -> Unit) {
         }
 
         BackButton(onBack = onBack, modifier = Modifier.statusBarsPadding())
+    }
+}
+
+@Composable
+private fun ReviewsTeaser(
+    movieId: Int,
+    movieTitle: String,
+    onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accent = LocalAccentColor.current
+    OutlinedButton(
+        onClick = { onReviewsClick(movieId, movieTitle) },
+        modifier = modifier.fillMaxWidth(),
+        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.7f)),
+    ) {
+        Text(
+            text = "Read Reviews",
+            color = accent,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = accent,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
