@@ -14,6 +14,8 @@ import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.R as CoreUiR
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -114,10 +116,10 @@ class DetailViewModel @AssistedInject constructor(
                         if (uiState.value.movie != null) {
                             // Cached detail already visible — surface an event, keep the screen
                             updateState { copy(isRefreshing = false) }
-                            sendEvent(DetailEvent.ShowError("Couldn't refresh — showing cached data"))
+                            sendEvent(DetailEvent.ShowError(UiText.StringResource(R.string.error_refresh_cached)))
                         } else {
                             updateState {
-                                copy(isLoading = false, isRefreshing = false, error = result.exception?.message ?: "Something went wrong")
+                                copy(isLoading = false, isRefreshing = false, error = UiText.StringResource(CoreUiR.string.error_something_went_wrong))
                             }
                         }
                     }

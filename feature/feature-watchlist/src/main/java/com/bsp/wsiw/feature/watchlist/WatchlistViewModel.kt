@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class WatchlistViewModel @Inject constructor(
                 val movie = uiState.value.movies.find { it.id == action.movieId } ?: return
                 viewModelScope.launch {
                     toggleWatchlist(movie, isWatchlisted = true)
-                    sendEvent(WatchlistEvent.ShowSnackbar("Removed from watchlist"))
+                    sendEvent(WatchlistEvent.ShowSnackbar(UiText.StringResource(R.string.watchlist_snackbar_removed)))
                 }
             }
         }

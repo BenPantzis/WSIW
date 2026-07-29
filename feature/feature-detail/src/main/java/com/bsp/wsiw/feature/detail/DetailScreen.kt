@@ -68,6 +68,7 @@ import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.model.VideoEntry
+import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
@@ -95,11 +96,12 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message)
+                is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message.resolve(context))
             }
         }
     }
@@ -133,7 +135,7 @@ internal fun DetailContent(
                 .background(MaterialTheme.colorScheme.background),
         ) {
             ErrorContent(
-                message = uiState.error!!,
+                message = uiState.error!!.asString(),
                 onRetry = { onAction(DetailAction.Retry) },
                 modifier = Modifier.align(Alignment.Center),
             )

@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
@@ -100,7 +101,7 @@ private fun ReviewsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                ErrorContent(message = uiState.error!!, onRetry = { onAction(ReviewsAction.Retry) })
+                ErrorContent(message = uiState.error!!.asString(), onRetry = { onAction(ReviewsAction.Retry) })
             }
             else -> {
                 SortChipRow(

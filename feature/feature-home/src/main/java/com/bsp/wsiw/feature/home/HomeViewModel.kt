@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.R as CoreUiR
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -112,14 +114,14 @@ class HomeViewModel @Inject constructor(
                     is Result.Error -> {
                         if (uiState.value.movies.isNotEmpty()) {
                             updateState { copy(isLoadingMore = false, isPullRefreshing = false) }
-                            if (replace) sendEvent(HomeEvent.ShowSnackbar("Couldn't refresh — showing cached data"))
+                            if (replace) sendEvent(HomeEvent.ShowSnackbar(UiText.StringResource(R.string.error_refresh_cached)))
                         } else {
                             updateState {
                                 copy(
                                     isLoading = false,
                                     isLoadingMore = false,
                                     isPullRefreshing = false,
-                                    error = result.exception?.message ?: "Something went wrong",
+                                    error = UiText.StringResource(CoreUiR.string.error_something_went_wrong),
                                 )
                             }
                         }

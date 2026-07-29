@@ -3,4 +3,5 @@
     <string name="watchlist_empty_title">Your watchlist is empty</string>
     <string name="watchlist_empty_body">Bookmark movies on their detail page to save them here</string>
     <string name="watchlist_browse_button">Browse movies</string>
+    <string name="watchlist_snackbar_removed">Removed from watchlist</string>
 </resources>

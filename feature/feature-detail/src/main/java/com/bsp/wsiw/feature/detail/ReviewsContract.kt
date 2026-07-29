@@ -2,6 +2,7 @@ package com.bsp.wsiw.feature.detail
 
 import androidx.annotation.StringRes
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.ui.UiText
 
 enum class ReviewSort(@param:StringRes val labelRes: Int) {
     Newest(R.string.reviews_sort_newest),
@@ -21,7 +22,7 @@ data class ReviewsUiState(
     val isLoadingMore: Boolean = false,
     val reviews: List<Review> = emptyList(),
     val sort: ReviewSort = ReviewSort.Newest,
-    val error: String? = null,
+    val error: UiText? = null,
     val currentPage: Int = 1,
     val totalPages: Int = Int.MAX_VALUE,
 ) {

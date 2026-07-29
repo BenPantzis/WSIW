@@ -5,4 +5,5 @@
     <string name="home_category_now_playing">Now Playing</string>
     <string name="home_category_upcoming">Upcoming</string>
     <string name="home_category_by_genre">By Genre</string>
+    <string name="error_refresh_cached">Couldn\'t refresh — showing cached data</string>
 </resources>

@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.PersonDetail
+import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
@@ -87,7 +88,7 @@ private fun PersonContent(
         when {
             uiState.isLoading -> PersonLoadingContent()
             uiState.error != null -> ErrorContent(
-                message = uiState.error!!,
+                message = uiState.error!!.asString(),
                 onRetry = { onAction(PersonAction.Retry) },
                 modifier = Modifier.align(Alignment.Center),
             )

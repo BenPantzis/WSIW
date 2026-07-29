@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.R as CoreUiR
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -39,7 +41,7 @@ class PersonViewModel @AssistedInject constructor(
                 when (result) {
                     is Result.Success -> updateState { copy(isLoading = false, person = result.data) }
                     is Result.Error -> updateState {
-                        copy(isLoading = false, error = result.exception?.message ?: "Something went wrong")
+                        copy(isLoading = false, error = UiText.StringResource(CoreUiR.string.error_something_went_wrong))
                     }
                     Result.Loading -> Unit
                 }

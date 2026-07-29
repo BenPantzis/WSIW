@@ -35,6 +35,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -46,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.ScreenScaffold
@@ -60,11 +62,12 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is HomeEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is HomeEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message.resolve(context))
             }
         }
     }
@@ -107,7 +110,7 @@ internal fun HomeContent(
                     contentPadding = PaddingValues(bottom = padding.calculateBottomPadding()),
                 )
                 uiState.error != null -> ErrorContent(
-                    message = uiState.error,
+                    message = uiState.error!!.asString(),
                     onRetry = { onAction(HomeAction.Retry) },
                     modifier = Modifier
                         .weight(1f)

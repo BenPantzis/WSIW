@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.R as CoreUiR
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -60,7 +62,7 @@ class ReviewsViewModel @AssistedInject constructor(
                         copy(
                             isLoading = false,
                             isLoadingMore = false,
-                            error = if (reviews.isEmpty()) result.exception?.message ?: "Something went wrong" else null,
+                            error = if (reviews.isEmpty()) UiText.StringResource(CoreUiR.string.error_something_went_wrong) else null,
                         )
                     }
                     Result.Loading -> Unit

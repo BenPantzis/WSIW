@@ -5,6 +5,8 @@ import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.usecase.SearchMoviesUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.R as CoreUiR
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,7 +43,7 @@ class SearchViewModel @Inject constructor(
                                 is Result.Success -> SearchUiState(query = query, movies = result.data)
                                 is Result.Error -> SearchUiState(
                                     query = query,
-                                    error = result.exception?.message ?: "Something went wrong",
+                                    error = UiText.StringResource(CoreUiR.string.error_something_went_wrong),
                                 )
                             }
                         }

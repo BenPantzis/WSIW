@@ -3,6 +3,7 @@ package com.bsp.wsiw.feature.home
 import androidx.annotation.StringRes
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.ui.UiText
 
 enum class HomeCategory(@param:StringRes val labelRes: Int, val apiKey: String?) {
     Popular(R.string.home_category_popular, null),
@@ -23,13 +24,13 @@ sealed interface HomeAction {
 }
 
 sealed interface HomeEvent {
-    data class ShowSnackbar(val message: String) : HomeEvent
+    data class ShowSnackbar(val message: UiText) : HomeEvent
 }
 
 data class HomeUiState(
     val isLoading: Boolean = true,
     val movies: List<Movie> = emptyList(),
-    val error: String? = null,
+    val error: UiText? = null,
     val isRefreshing: Boolean = false,
     val isPullRefreshing: Boolean = false,
     val selectedCategory: HomeCategory = HomeCategory.Popular,
