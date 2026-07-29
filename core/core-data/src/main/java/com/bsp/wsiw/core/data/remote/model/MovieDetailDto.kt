@@ -15,6 +15,9 @@ data class MovieDetailDto(
     val genres: List<GenreDto>,
     val runtime: Int,
     @SerializedName("original_language") val originalLanguage: String,
+    val videos: VideoResultsDto? = null,
+    val credits: CreditsDto? = null,
+    val similar: MovieListResponseDto? = null,
 )
 
 data class GenreDto(

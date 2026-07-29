@@ -1,7 +1,11 @@
 package com.bsp.wsiw.core.database.converter
 
 import androidx.room.TypeConverter
+import com.bsp.wsiw.core.domain.model.CastMember
 import com.bsp.wsiw.core.domain.model.Genre
+import com.bsp.wsiw.core.domain.model.Movie
+import org.json.JSONArray
+import org.json.JSONObject
 
 class Converters {
 
@@ -16,4 +20,70 @@ class Converters {
             val parts = it.split(":", limit = 2)
             Genre(id = parts[0].toInt(), name = parts[1])
         }
+
+    @TypeConverter
+    fun castToJson(cast: List<CastMember>): String {
+        val array = JSONArray()
+        for (m in cast) {
+            array.put(JSONObject().apply {
+                put("id", m.id)
+                put("name", m.name)
+                put("character", m.character)
+                put("profileUrl", m.profileUrl ?: JSONObject.NULL)
+            })
+        }
+        return array.toString()
+    }
+
+    @TypeConverter
+    fun jsonToCast(json: String): List<CastMember> {
+        if (json.isEmpty() || json == "[]") return emptyList()
+        val array = JSONArray(json)
+        return (0 until array.length()).map { i ->
+            val o = array.getJSONObject(i)
+            CastMember(
+                id = o.getInt("id"),
+                name = o.getString("name"),
+                character = o.getString("character"),
+                profileUrl = o.optString("profileUrl", "").takeIf { it.isNotEmpty() },
+            )
+        }
+    }
+
+    @TypeConverter
+    fun moviesToJson(movies: List<Movie>): String {
+        val array = JSONArray()
+        for (m in movies) {
+            array.put(JSONObject().apply {
+                put("id", m.id)
+                put("title", m.title)
+                put("overview", m.overview)
+                put("posterUrl", m.posterUrl ?: JSONObject.NULL)
+                put("backdropUrl", m.backdropUrl ?: JSONObject.NULL)
+                put("releaseDate", m.releaseDate)
+                put("voteAverage", m.voteAverage)
+                put("voteCount", m.voteCount)
+            })
+        }
+        return array.toString()
+    }
+
+    @TypeConverter
+    fun jsonToMovies(json: String): List<Movie> {
+        if (json.isEmpty() || json == "[]") return emptyList()
+        val array = JSONArray(json)
+        return (0 until array.length()).map { i ->
+            val o = array.getJSONObject(i)
+            Movie(
+                id = o.getInt("id"),
+                title = o.getString("title"),
+                overview = o.getString("overview"),
+                posterUrl = o.optString("posterUrl", "").takeIf { it.isNotEmpty() },
+                backdropUrl = o.optString("backdropUrl", "").takeIf { it.isNotEmpty() },
+                releaseDate = o.getString("releaseDate"),
+                voteAverage = o.getDouble("voteAverage"),
+                voteCount = o.getInt("voteCount"),
+            )
+        }
+    }
 }

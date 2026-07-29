@@ -25,5 +25,6 @@ interface TmdbApiService {
     suspend fun getMovieDetail(
         @Path("movieId") movieId: Int,
         @Query("language") language: String = "en-US",
+        @Query("append_to_response") appendToResponse: String = "videos,credits,similar",
     ): MovieDetailDto
 }

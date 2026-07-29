@@ -2,8 +2,11 @@ package com.bsp.wsiw.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.bsp.wsiw.core.domain.model.CastMember
 import com.bsp.wsiw.core.domain.model.Genre
+import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
+import com.bsp.wsiw.core.domain.model.VideoEntry
 
 @Entity(tableName = "movie_detail_cache")
 data class MovieDetailEntity(
@@ -16,10 +19,14 @@ data class MovieDetailEntity(
     val voteAverage: Double,
     val voteCount: Int,
     val tagline: String,
-    val genres: List<Genre>, // stored via Converters.genresToString / stringToGenres
+    val genres: List<Genre>,
     val runtime: Int,
     val originalLanguage: String,
     val cachedAt: Long,
+    val trailerKey: String? = null,
+    val trailerName: String? = null,
+    val cast: List<CastMember> = emptyList(),
+    val similarMovies: List<Movie> = emptyList(),
 )
 
 fun MovieDetailEntity.toDomain() = MovieDetail(
@@ -35,4 +42,7 @@ fun MovieDetailEntity.toDomain() = MovieDetail(
     genres = genres,
     runtime = runtime,
     originalLanguage = originalLanguage,
+    trailer = if (trailerKey != null && trailerName != null) VideoEntry(trailerKey, trailerName) else null,
+    cast = cast,
+    similarMovies = similarMovies,
 )

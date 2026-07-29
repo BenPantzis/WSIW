@@ -10,8 +10,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DetailKey(val movieId: Int) : NavKey
 
-fun EntryProviderScope<NavKey>.detailDestination(onBack: () -> Unit) {
+fun EntryProviderScope<NavKey>.detailDestination(
+    onBack: () -> Unit,
+    onMovieClick: (Int) -> Unit,
+) {
     entry<DetailKey> { key ->
-        DetailScreen(movieId = key.movieId, onBack = onBack)
+        DetailScreen(movieId = key.movieId, onBack = onBack, onMovieClick = onMovieClick)
     }
 }

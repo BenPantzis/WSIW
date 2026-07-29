@@ -13,4 +13,7 @@ data class MovieDetail(
     val genres: List<Genre>,
     val runtime: Int,
     val originalLanguage: String,
+    val trailer: VideoEntry? = null,
+    val cast: List<CastMember> = emptyList(),
+    val similarMovies: List<Movie> = emptyList(),
 )

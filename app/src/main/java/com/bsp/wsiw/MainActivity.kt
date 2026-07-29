@@ -224,7 +224,10 @@ private fun WsiwApp() {
                     onMovieClick = ::navigateToDetail,
                     onBrowseMovies = { navigateToTab(HomeKey) },
                 )
-                detailDestination(onBack = { backStack.removeLastOrNull() })
+                detailDestination(
+                    onBack = { backStack.removeLastOrNull() },
+                    onMovieClick = ::navigateToDetail,
+                )
             },
             modifier = Modifier
                 .padding(bottom = innerPadding.calculateBottomPadding())
