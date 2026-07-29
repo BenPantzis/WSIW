@@ -174,7 +174,7 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
-                    .padding(bottom = 48.dp),
+                    .padding(bottom = if (person.filmography.isEmpty()) 48.dp else 0.dp),
             ) {
                 Text(
                     text = person.name,
