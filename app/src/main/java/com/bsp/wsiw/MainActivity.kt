@@ -1,6 +1,15 @@
 package com.bsp.wsiw
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -52,15 +62,94 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        splashScreen.setOnExitAnimationListener { provider ->
+            val decor = window.decorView as ViewGroup
+            if (decor.height > 0) {
+                runLetterboxAnimation(provider, decor)
+            } else {
+                decor.post { runLetterboxAnimation(provider, decor) }
+            }
+        }
+
         setContent {
             WSIWTheme {
                 WsiwApp()
             }
         }
+    }
+
+    private fun runLetterboxAnimation(provider: SplashScreenViewProvider, decor: ViewGroup) {
+        val screenH = decor.height
+        val barH = (screenH * 0.38f).toInt()
+        val easing = AccelerateDecelerateInterpolator()
+
+        val topBar = View(this).apply {
+            setBackgroundColor(CINEMA_BLACK)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, barH, Gravity.TOP
+            )
+            translationY = -barH.toFloat()
+        }
+        val bottomBar = View(this).apply {
+            setBackgroundColor(CINEMA_BLACK)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, barH, Gravity.BOTTOM
+            )
+            translationY = barH.toFloat()
+        }
+        decor.addView(topBar)
+        decor.addView(bottomBar)
+
+        // iconView throws NPE when the system splash has no icon layer — handle gracefully
+        val iconView = runCatching { provider.iconView }.getOrNull()
+
+        val animators = buildList {
+            add(ObjectAnimator.ofFloat(topBar, View.TRANSLATION_Y, 0f)
+                .also { it.duration = SLIDE_MS; it.interpolator = easing })
+            add(ObjectAnimator.ofFloat(bottomBar, View.TRANSLATION_Y, 0f)
+                .also { it.duration = SLIDE_MS; it.interpolator = easing })
+            if (iconView != null) {
+                add(ObjectAnimator.ofFloat(iconView, View.ALPHA, 0f)
+                    .also { it.duration = FADE_MS; it.interpolator = easing })
+            }
+        }
+        val slideIn = AnimatorSet().apply { playTogether(animators) }
+        slideIn.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                provider.remove()
+                topBar.postDelayed({
+                    val slideOut = AnimatorSet().apply {
+                        playTogether(
+                            ObjectAnimator.ofFloat(topBar, View.TRANSLATION_Y, -barH.toFloat())
+                                .also { it.duration = SLIDE_MS; it.interpolator = easing },
+                            ObjectAnimator.ofFloat(bottomBar, View.TRANSLATION_Y, barH.toFloat())
+                                .also { it.duration = SLIDE_MS; it.interpolator = easing },
+                        )
+                    }
+                    slideOut.addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            decor.removeView(topBar)
+                            decor.removeView(bottomBar)
+                        }
+                    })
+                    slideOut.start()
+                }, HOLD_MS)
+            }
+        })
+        slideIn.start()
+    }
+
+    companion object {
+        private const val SLIDE_MS = 450L
+        private const val FADE_MS  = 350L
+        private const val HOLD_MS  = 300L
+        private val CINEMA_BLACK   = 0xFF0D0D0D.toInt()
     }
 }
 

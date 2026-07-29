@@ -12,6 +12,7 @@ A cinematic movie discovery app for Android, powered by the [TMDB API](https://w
 - **Watchlist** — Room-backed local list with add/remove, empty state, and snackbar feedback
 - **Offline-first** — Stale-while-revalidate caching with a 10-minute TTL; pull-to-refresh forces a network fetch
 - **Navigation** — Jetpack Navigation3 with custom transitions: slide for detail push/pop, crossfade for tab switching
+- **Animated splash screen** — Letterbox curtain: two cinema-black bars slide in from top and bottom, the home screen peeks through the gap, then the bars retract to reveal the app (~1.2 s total)
 
 ---
 
@@ -34,7 +35,7 @@ A cinematic movie discovery app for Android, powered by the [TMDB API](https://w
 
 ```
 WSIW/
-├── app/                    # Application module — NavDisplay, Scaffold, bottom nav
+├── app/                    # Application module — NavDisplay, Scaffold, bottom nav, splash animation
 ├── build-logic/            # Convention plugins (AGP, Compose, Hilt, etc.)
 └── core/
 │   ├── core-common/        # Base UseCase, Result, SafeApiCall
@@ -42,6 +43,7 @@ WSIW/
 │   ├── core-datastore/     # DataStore preferences
 │   ├── core-domain/        # Domain models, repository interfaces
 │   ├── core-network/       # OkHttp/Retrofit setup, auth interceptor
+│   ├── core-testing/       # Shared test utilities — MainDispatcherRule, fakeMovie(), fakeMovieDetail()
 │   └── core-ui/            # Theme, spacing tokens, shared components
 └── feature/
     ├── feature-detail/     # Movie detail screen

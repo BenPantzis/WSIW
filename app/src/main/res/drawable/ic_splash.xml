@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!--
+        Film reel: gold outer ring (r=34), three sprocket holes at 12/8/4 o'clock
+        positions (r=5, distance=24 from centre), and a centre hub (r=8).
+        evenOdd fill punches the holes and the annular gap transparently.
+    -->
+    <path
+        android:fillColor="#E8A020"
+        android:fillType="evenOdd"
+        android:pathData="
+            M54,20 A34,34 0 1,0 54,88 A34,34 0 1,0 54,20 Z
+            M54,38 A16,16 0 1,0 54,70 A16,16 0 1,0 54,38 Z
+            M54,25 A5,5 0 1,0 54,35 A5,5 0 1,0 54,25 Z
+            M33.2,61 A5,5 0 1,0 33.2,71 A5,5 0 1,0 33.2,61 Z
+            M74.8,61 A5,5 0 1,0 74.8,71 A5,5 0 1,0 74.8,61 Z
+            M54,46 A8,8 0 1,0 54,62 A8,8 0 1,0 54,46 Z" />
+</vector>
