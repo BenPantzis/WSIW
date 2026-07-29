@@ -48,6 +48,7 @@ import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
 import com.bsp.wsiw.core.ui.theme.AppTheme
+import com.bsp.wsiw.core.ui.util.formatTmdbDate
 
 private val ProfileHeight = 320.dp
 private val Gold = Color(0xFFE8A020)
@@ -246,20 +247,6 @@ private fun PersonInfoRow(person: PersonDetail) {
     }
 }
 
-private val MONTH_NAMES = arrayOf(
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-)
-
-private fun formatTmdbDate(date: String): String {
-    val parts = date.split("-")
-    if (parts.size != 3) return date
-    val year = parts[0]
-    val month = parts[1].toIntOrNull()?.minus(1) ?: return date
-    val day = parts[2].toIntOrNull() ?: return date
-    val monthName = MONTH_NAMES.getOrNull(month) ?: return date
-    return "$monthName $day, $year"
-}
 
 @Composable
 private fun InfoLine(label: String, value: String) {

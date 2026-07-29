@@ -69,6 +69,7 @@ import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
 import com.bsp.wsiw.core.ui.theme.AppTheme
+import com.bsp.wsiw.core.ui.util.formatTmdbDate
 import kotlin.math.roundToInt
 
 private val BackdropHeight = 300.dp
@@ -757,12 +758,7 @@ private fun DetailLoadingContent(onBack: () -> Unit) {
 
 // --- Helpers ---
 
-private fun formatReleaseDate(raw: String): String = try {
-    val date = java.time.LocalDate.parse(raw)
-    date.format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy"))
-} catch (_: Exception) {
-    raw
-}
+private fun formatReleaseDate(raw: String): String = formatTmdbDate(raw)
 
 private fun formatRuntime(minutes: Int): String {
     val h = minutes / 60
