@@ -1,5 +1,8 @@
 package com.bsp.wsiw.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +12,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
@@ -33,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
@@ -73,34 +80,100 @@ internal fun HomeContent(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     ScreenScaffold(snackbarHostState = snackbarHostState) { padding, _ ->
-        when {
-            uiState.isLoading -> ShimmerMovieGrid(contentPadding = padding)
-            uiState.error != null -> ErrorContent(
-                message = uiState.error,
-                onRetry = { onAction(HomeAction.Retry) },
-                modifier = Modifier.padding(padding),
+        Column(modifier = Modifier.fillMaxSize()) {
+            CategoryChipRow(
+                selected = uiState.selectedCategory,
+                onSelect = { onAction(HomeAction.SelectCategory(it)) },
+                modifier = Modifier.padding(top = padding.calculateTopPadding()),
             )
-            else -> @OptIn(ExperimentalMaterial3Api::class) PullToRefreshBox(
-                isRefreshing = uiState.isPullRefreshing,
-                onRefresh = { onAction(HomeAction.Refresh) },
-                modifier = Modifier.fillMaxSize(),
+            AnimatedVisibility(
+                visible = uiState.selectedCategory == HomeCategory.ByGenre && uiState.genres.isNotEmpty(),
+                enter = expandVertically(),
+                exit = shrinkVertically(),
             ) {
-                MovieGrid(
-                    movies = uiState.movies,
-                    onMovieClick = onMovieClick,
-                    contentPadding = padding,
+                GenreChipRow(
+                    genres = uiState.genres,
+                    selectedGenreId = uiState.selectedGenreId,
+                    onSelect = { onAction(HomeAction.SelectGenre(it)) },
                 )
-                if (uiState.isRefreshing) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .padding(top = padding.calculateTopPadding()),
-                        color = Color(0xFFE8A020),
-                        trackColor = Color.Transparent,
+            }
+            when {
+                uiState.isLoading -> ShimmerMovieGrid(
+                    contentPadding = PaddingValues(bottom = padding.calculateBottomPadding()),
+                )
+                uiState.error != null -> ErrorContent(
+                    message = uiState.error,
+                    onRetry = { onAction(HomeAction.Retry) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(bottom = padding.calculateBottomPadding()),
+                )
+                else -> @OptIn(ExperimentalMaterial3Api::class) PullToRefreshBox(
+                    isRefreshing = uiState.isPullRefreshing,
+                    onRefresh = { onAction(HomeAction.Refresh) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    MovieGrid(
+                        movies = uiState.movies,
+                        onMovieClick = onMovieClick,
+                        bottomPadding = padding.calculateBottomPadding(),
                     )
+                    if (uiState.isRefreshing) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter),
+                            color = Color(0xFFE8A020),
+                            trackColor = Color.Transparent,
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+// --- Category chips ---
+
+@Composable
+private fun CategoryChipRow(
+    selected: HomeCategory,
+    onSelect: (HomeCategory) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+    ) {
+        items(HomeCategory.entries) { category ->
+            FilterChip(
+                selected = category == selected,
+                onClick = { onSelect(category) },
+                label = { Text(category.label) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun GenreChipRow(
+    genres: List<Genre>,
+    selectedGenreId: Int?,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+    ) {
+        items(genres, key = { it.id }) { genre ->
+            FilterChip(
+                selected = genre.id == selectedGenreId,
+                onClick = { onSelect(genre.id) },
+                label = { Text(genre.name) },
+            )
         }
     }
 }
@@ -118,7 +191,7 @@ private fun ShimmerMovieGrid(
         contentPadding = PaddingValues(
             start = spacing.md,
             end = spacing.md,
-            top = contentPadding.calculateTopPadding() + spacing.md,
+            top = spacing.md,
             bottom = contentPadding.calculateBottomPadding() + spacing.md,
         ),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
@@ -154,7 +227,7 @@ private fun ShimmerPosterCard(modifier: Modifier = Modifier) {
 private fun MovieGrid(
     movies: List<Movie>,
     onMovieClick: (Int) -> Unit,
-    contentPadding: PaddingValues,
+    bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
     val spacing = AppTheme.spacing
@@ -163,8 +236,8 @@ private fun MovieGrid(
         contentPadding = PaddingValues(
             start = spacing.md,
             end = spacing.md,
-            top = contentPadding.calculateTopPadding() + spacing.md,
-            bottom = contentPadding.calculateBottomPadding() + spacing.md,
+            top = spacing.md,
+            bottom = bottomPadding + spacing.md,
         ),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),

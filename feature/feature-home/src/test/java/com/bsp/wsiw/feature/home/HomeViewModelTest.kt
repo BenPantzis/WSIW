@@ -2,6 +2,7 @@ package com.bsp.wsiw.feature.home
 
 import app.cash.turbine.test
 import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.usecase.GetPopularMoviesUseCase
 import com.bsp.wsiw.core.testing.MainDispatcherRule
 import com.bsp.wsiw.core.testing.fakeMovie
@@ -25,8 +26,9 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val getPopularMovies: GetPopularMoviesUseCase = mockk()
+    private val movieRepository: MovieRepository = mockk(relaxed = true)
 
-    private fun createViewModel() = HomeViewModel(getPopularMovies)
+    private fun createViewModel() = HomeViewModel(getPopularMovies, movieRepository)
 
     @Test
     fun `success populates movies and clears loading`() {

@@ -7,6 +7,7 @@ import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
 import com.bsp.wsiw.core.database.entity.toDomain
+import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.repository.MovieRepository
@@ -41,6 +42,26 @@ class MovieRepositoryImpl @Inject constructor(
                 Result.Loading -> Result.Loading
             }
         }
+
+    override fun getMoviesByCategory(category: String, page: Int): Flow<Result<List<Movie>>> = flow {
+        emit(safeApiCall {
+            when (category) {
+                "trending" -> apiService.getTrendingMovies(page)
+                "top_rated" -> apiService.getTopRatedMovies(page)
+                "now_playing" -> apiService.getNowPlayingMovies(page)
+                "upcoming" -> apiService.getUpcomingMovies(page)
+                else -> throw IllegalArgumentException("Unknown category: $category")
+            }.results.map { it.toDomain() }
+        })
+    }
+
+    override fun getGenres(): Flow<Result<List<Genre>>> = flow {
+        emit(safeApiCall { apiService.getGenres().genres.map { Genre(id = it.id, name = it.name) } })
+    }
+
+    override fun discoverMovies(genreId: Int, page: Int): Flow<Result<List<Movie>>> = flow {
+        emit(safeApiCall { apiService.discoverMovies(genreId, page).results.map { it.toDomain() } })
+    }
 
     override fun searchMovies(query: String, page: Int): Flow<Result<List<Movie>>> = flow {
         emit(safeApiCall { apiService.searchMovies(query, page).results.map { it.toDomain() } })
