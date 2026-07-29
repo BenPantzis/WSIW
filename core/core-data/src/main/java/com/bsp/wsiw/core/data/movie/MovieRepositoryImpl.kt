@@ -56,8 +56,9 @@ class MovieRepositoryImpl @Inject constructor(
             },
         ).map { result ->
             when (result) {
-                is Result.Success -> result.data?.let { Result.Success(it.toDomain()) }
-                    ?: Result.Error(Exception("Movie not found in cache"))
+                is Result.Success -> result.data?.let { Result.Success(it.toDomain(), result.isRefreshing) }
+                    ?: if (result.isRefreshing) Result.Loading  // cache miss while fetch is in-flight
+                       else Result.Error(Exception("Movie not found in cache"))
                 is Result.Error -> Result.Error(result.exception)
                 Result.Loading -> Result.Loading
             }
