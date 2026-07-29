@@ -77,6 +77,25 @@ Two product flavors are configured — `dev` and `prod` — both currently point
 
 ---
 
+## Testing
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+ViewModel unit tests cover all four feature modules (27 tests total). The test stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`. Each test class uses a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher`, so coroutines run eagerly and state settles synchronously after each action — no manual `advanceUntilIdle()` needed except in `SearchViewModelTest`, where `advanceTimeBy(400)` is used to fire the 300 ms debounce.
+
+| Test class | What's covered |
+|---|---|
+| `HomeViewModelTest` | Success/error paths, forceRefresh flag on pull-to-refresh, retry call count, shimmer stays visible on empty cache |
+| `SearchViewModelTest` | Immediate result clearing on query change, blank-query guard, debounce timing, success and error states |
+| `WatchlistViewModelTest` | List population, `RemoveMovie` args and snackbar event, unknown-id no-op guard |
+| `DetailViewModelTest` | Load success/error, error-with-cache sends event instead of overwriting screen, `isWatchlisted` flow, `ToggleWatchlist` passes correct flag |
+
+`DetailViewModelTest` uses `fakeMovieDetail(posterUrl = null, backdropUrl = null)` so the Coil-based palette extraction path returns early and the `Context` mock is never touched.
+
+---
+
 ## Architecture Notes
 
 - **Offline-first**: `NetworkBoundResource` emits cached data immediately, then fetches fresh data and re-emits. A 10-minute TTL skips the network if the cache is recent enough.
