@@ -12,5 +12,5 @@ android {
 }
 
 dependencies {
-    implementation(catalog.findLibrary("coroutines-android").get())
+    api(catalog.findLibrary("coroutines-android").get())
 }
