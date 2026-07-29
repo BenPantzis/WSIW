@@ -95,7 +95,10 @@ class HomeViewModel @Inject constructor(
                                 isLoading = false,
                                 isLoadingMore = false,
                                 isPullRefreshing = false,
-                                movies = if (replace) paged.items else movies + paged.items,
+                                movies = if (replace) paged.items else {
+                                    val seen = movies.mapTo(HashSet()) { it.id }
+                                    movies + paged.items.filter { it.id !in seen }
+                                },
                                 error = null,
                                 currentPage = page,
                                 totalPages = paged.totalPages,
