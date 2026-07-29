@@ -15,6 +15,7 @@ android {
 
 dependencies {
     implementation(project(":core:core-ui"))
+    implementation(project(":core:core-datastore"))
     implementation(project(":core:core-common"))
     implementation(project(":core:core-domain"))
 
@@ -26,7 +27,7 @@ dependencies {
     implementation(catalog.findLibrary("coil-compose").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
 
     testImplementation(project(":core:core-testing"))
 }

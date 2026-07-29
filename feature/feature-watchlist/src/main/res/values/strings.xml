@@ -4,4 +4,10 @@
     <string name="watchlist_empty_body">Bookmark movies on their detail page to save them here</string>
     <string name="watchlist_browse_button">Browse movies</string>
     <string name="watchlist_snackbar_removed">Removed from watchlist</string>
+    <string name="watchlist_sort_date_added">Date Added</string>
+    <string name="watchlist_sort_title_az">Title A–Z</string>
+    <string name="watchlist_sort_rating">Rating</string>
+    <string name="watchlist_cd_toggle_grid">Switch to grid view</string>
+    <string name="watchlist_cd_toggle_list">Switch to list view</string>
+    <string name="watchlist_action_undo">Undo</string>
 </resources>

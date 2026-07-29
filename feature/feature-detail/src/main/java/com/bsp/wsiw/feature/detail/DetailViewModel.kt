@@ -33,7 +33,7 @@ class DetailViewModel @AssistedInject constructor(
     private val isWatchlisted: IsWatchlistedUseCase,
     private val toggleWatchlist: ToggleWatchlistUseCase,
     private val movieRepository: MovieRepository,
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : BaseViewModel<DetailAction, DetailEvent, DetailUiState>(
     initialState = DetailUiState(),
 ) {
