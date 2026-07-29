@@ -3,6 +3,7 @@ package com.bsp.wsiw.core.data.remote
 import com.bsp.wsiw.core.data.remote.model.GenreListResponseDto
 import com.bsp.wsiw.core.data.remote.model.MovieDetailDto
 import com.bsp.wsiw.core.data.remote.model.MovieListResponseDto
+import com.bsp.wsiw.core.data.remote.model.PersonDetailDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -57,6 +58,13 @@ interface TmdbApiService {
         @Query("page") page: Int = 1,
         @Query("language") language: String = "en-US",
     ): MovieListResponseDto
+
+    @GET("person/{personId}")
+    suspend fun getPersonDetail(
+        @Path("personId") personId: Int,
+        @Query("language") language: String = "en-US",
+        @Query("append_to_response") appendToResponse: String = "movie_credits",
+    ): PersonDetailDto
 
     @GET("movie/{movieId}")
     suspend fun getMovieDetail(

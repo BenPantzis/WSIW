@@ -51,7 +51,9 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.bsp.wsiw.core.ui.theme.WSIWTheme
 import com.bsp.wsiw.feature.detail.navigation.DetailKey
+import com.bsp.wsiw.feature.detail.navigation.PersonKey
 import com.bsp.wsiw.feature.detail.navigation.detailDestination
+import com.bsp.wsiw.feature.detail.navigation.personDestination
 import com.bsp.wsiw.feature.home.navigation.HomeKey
 import com.bsp.wsiw.feature.home.navigation.homeDestination
 import com.bsp.wsiw.feature.search.navigation.SearchKey
@@ -164,6 +166,7 @@ private fun WsiwApp() {
         }
     }
 
+
     fun navigateToTab(key: NavKey) {
         if (currentKey?.let { it::class == key::class } == true) return
         backStack.clear()
@@ -172,6 +175,10 @@ private fun WsiwApp() {
 
     fun navigateToDetail(movieId: Int) {
         backStack.add(DetailKey(movieId))
+    }
+
+    fun navigateToPerson(personId: Int) {
+        backStack.add(PersonKey(personId))
     }
 
     Scaffold(
@@ -225,6 +232,11 @@ private fun WsiwApp() {
                     onBrowseMovies = { navigateToTab(HomeKey) },
                 )
                 detailDestination(
+                    onBack = { backStack.removeLastOrNull() },
+                    onMovieClick = ::navigateToDetail,
+                    onPersonClick = ::navigateToPerson,
+                )
+                personDestination(
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
                 )

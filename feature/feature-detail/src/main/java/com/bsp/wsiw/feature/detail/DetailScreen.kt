@@ -82,6 +82,7 @@ fun DetailScreen(
     movieId: Int,
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit,
+    onPersonClick: (Int) -> Unit = {},
     viewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory>(
         creationCallback = { it.create(movieId) },
     ),
@@ -102,6 +103,7 @@ fun DetailScreen(
         onAction = viewModel::onAction,
         onBack = onBack,
         onMovieClick = onMovieClick,
+        onPersonClick = onPersonClick,
         snackbarHostState = snackbarHostState,
     )
 }
@@ -112,6 +114,7 @@ internal fun DetailContent(
     onAction: (DetailAction) -> Unit,
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit = {},
+    onPersonClick: (Int) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     when {
@@ -132,6 +135,7 @@ internal fun DetailContent(
             movie = uiState.movie!!,
             onBack = onBack,
             onMovieClick = onMovieClick,
+            onPersonClick = onPersonClick,
             accentArgb = uiState.accentArgb,
             isWatchlisted = uiState.isWatchlisted,
             onToggleWatchlist = { onAction(DetailAction.ToggleWatchlist) },
@@ -148,6 +152,7 @@ private fun CollapsingDetailContent(
     movie: MovieDetail,
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit,
+    onPersonClick: (Int) -> Unit,
     accentArgb: Int?,
     isWatchlisted: Boolean,
     onToggleWatchlist: () -> Unit,
@@ -182,7 +187,7 @@ private fun CollapsingDetailContent(
                 scrollFraction = scrollFraction,
                 backdropHeightPx = backdropHeightPx,
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick)
+            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick)
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
                 onClick = onToggleWatchlist,
@@ -259,6 +264,7 @@ private fun ContentList(
     movie: MovieDetail,
     listState: LazyListState,
     onMovieClick: (Int) -> Unit,
+    onPersonClick: (Int) -> Unit,
 ) {
     LazyColumn(
         state = listState,
@@ -268,7 +274,7 @@ private fun ContentList(
             Spacer(modifier = Modifier.height(BackdropHeight - ContentOverlap))
         }
         item {
-            MovieDetailCard(movie = movie, onMovieClick = onMovieClick)
+            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick)
         }
     }
 }
@@ -356,7 +362,7 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
 // --- Detail card content ---
 
 @Composable
-private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit) {
+private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit, onPersonClick: (Int) -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = ContentOverlap, topEnd = ContentOverlap),
@@ -437,7 +443,7 @@ private fun MovieDetailCard(movie: MovieDetail, onMovieClick: (Int) -> Unit) {
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.md),
                 ) {
-                    items(movie.cast) { member -> CastCard(member) }
+                    items(movie.cast) { member -> CastCard(member, onClick = { onPersonClick(member.id) }) }
                 }
             }
 
@@ -494,10 +500,12 @@ private fun TrailerButton(trailer: VideoEntry, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun CastCard(member: CastMember) {
+private fun CastCard(member: CastMember, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(80.dp),
+        modifier = Modifier
+            .width(80.dp)
+            .clickable(onClick = onClick),
     ) {
         if (member.profileUrl != null) {
             RemoteImage(

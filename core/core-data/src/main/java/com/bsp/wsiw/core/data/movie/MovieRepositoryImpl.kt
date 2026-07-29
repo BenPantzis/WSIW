@@ -11,6 +11,7 @@ import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.PagedResult
+import com.bsp.wsiw.core.domain.model.PersonDetail
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -71,6 +72,27 @@ class MovieRepositoryImpl @Inject constructor(
 
     override fun searchMovies(query: String, page: Int): Flow<Result<List<Movie>>> = flow {
         emit(safeApiCall { apiService.searchMovies(query, page).results.map { it.toDomain() } })
+    }
+
+    override fun getPersonDetail(personId: Int): Flow<Result<PersonDetail>> = flow {
+        emit(safeApiCall {
+            val dto = apiService.getPersonDetail(personId)
+            PersonDetail(
+                id = dto.id,
+                name = dto.name,
+                biography = dto.biography,
+                birthday = dto.birthday,
+                placeOfBirth = dto.placeOfBirth,
+                profileUrl = dto.profilePath?.let { "https://image.tmdb.org/t/p/w342$it" },
+                knownForDepartment = dto.knownForDepartment,
+                filmography = dto.movieCredits?.cast
+                    ?.filter { it.posterPath != null }
+                    ?.sortedByDescending { it.voteAverage }
+                    ?.take(20)
+                    ?.map { it.toDomain() }
+                    ?: emptyList(),
+            )
+        })
     }
 
     override fun getMovieDetail(movieId: Int): Flow<Result<MovieDetail>> =
