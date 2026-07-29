@@ -1,6 +1,8 @@
 package com.bsp.wsiw.feature.search
 
 import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.domain.model.PagedResult
+import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.usecase.SearchMoviesUseCase
 import com.bsp.wsiw.core.testing.MainDispatcherRule
 import com.bsp.wsiw.core.testing.fakeMovie
@@ -28,8 +30,13 @@ class SearchViewModelTest {
     val mainDispatcherRule = MainDispatcherRule(testDispatcher)
 
     private val searchMovies: SearchMoviesUseCase = mockk()
+    private val movieRepository: MovieRepository = mockk(relaxed = true) {
+        every { getMoviesByCategory(any(), any()) } returns flowOf(
+            Result.Success(PagedResult(emptyList(), totalPages = 1))
+        )
+    }
 
-    private fun createViewModel() = SearchViewModel(searchMovies)
+    private fun createViewModel() = SearchViewModel(searchMovies, movieRepository)
 
     @Test
     fun `initial state has empty query and no results`() {

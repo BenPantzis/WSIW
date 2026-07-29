@@ -16,4 +16,6 @@ data class SearchUiState(
     val isLoading: Boolean = false,
     val movies: List<Movie> = emptyList(),
     val error: String? = null,
+    val trendingMovies: List<Movie> = emptyList(),
+    val isTrendingLoading: Boolean = true,
 )

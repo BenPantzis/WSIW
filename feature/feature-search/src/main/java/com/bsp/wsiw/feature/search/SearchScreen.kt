@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -34,6 +37,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -93,22 +97,23 @@ internal fun SearchContent(
                 ),
             )
 
+            val gridPadding = PaddingValues(
+                start = spacing.md, end = spacing.md,
+                bottom = padding.calculateBottomPadding() + spacing.md,
+            )
             when {
-                uiState.query.isBlank() -> SearchIdleState()
-                uiState.isLoading -> SearchShimmerGrid(
-                    contentPadding = PaddingValues(
-                        start = spacing.md, end = spacing.md,
-                        bottom = padding.calculateBottomPadding() + spacing.md,
-                    ),
+                uiState.query.isBlank() -> TrendingIdleState(
+                    trendingMovies = uiState.trendingMovies,
+                    isTrendingLoading = uiState.isTrendingLoading,
+                    onMovieClick = onMovieClick,
+                    contentPadding = gridPadding,
                 )
+                uiState.isLoading -> SearchShimmerGrid(contentPadding = gridPadding)
                 uiState.movies.isEmpty() -> NoResultsState(query = uiState.query)
                 else -> SearchResultsGrid(
                     movies = uiState.movies,
                     onMovieClick = onMovieClick,
-                    contentPadding = PaddingValues(
-                        start = spacing.md, end = spacing.md,
-                        bottom = padding.calculateBottomPadding() + spacing.md,
-                    ),
+                    contentPadding = gridPadding,
                 )
             }
         }
@@ -172,31 +177,67 @@ private fun SearchTextField(
 // --- State composables ---
 
 @Composable
-private fun SearchIdleState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
+private fun TrendingIdleState(
+    trendingMovies: List<Movie>,
+    isTrendingLoading: Boolean,
+    onMovieClick: (Int) -> Unit,
+    contentPadding: PaddingValues,
+) {
+    val spacing = AppTheme.spacing
+    when {
+        isTrendingLoading -> SearchShimmerGrid(
+            contentPadding = contentPadding,
+            headerSlot = { TrendingHeader() },
+        )
+        trendingMovies.isNotEmpty() -> LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 160.dp),
+            contentPadding = contentPadding,
+            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(spacing.sm),
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Text(
-                text = "🎬",
-                style = MaterialTheme.typography.displayMedium,
-            )
-            Text(
-                text = "Find your next watch",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = "Search by title, keyword, or actor",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+            item(span = { GridItemSpan(maxLineSpan) }) { TrendingHeader() }
+            items(trendingMovies, key = { it.id }) { movie ->
+                SearchPosterCard(movie = movie, onClick = { onMovieClick(movie.id) })
+            }
         }
+        else -> Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                Text(text = "🎬", style = MaterialTheme.typography.displayMedium)
+                Text(
+                    text = "Find your next watch",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Search by title, keyword, or actor",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrendingHeader() {
+    val spacing = AppTheme.spacing
+    Column {
+        Spacer(Modifier.height(spacing.sm))
+        Text(
+            text = "Trending",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(start = spacing.xs, end = spacing.xs, bottom = spacing.xs),
+        )
     }
 }
 
@@ -306,6 +347,7 @@ private fun SearchPosterCard(movie: Movie, onClick: () -> Unit) {
 private fun SearchShimmerGrid(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    headerSlot: (@Composable () -> Unit)? = null,
 ) {
     val spacing = AppTheme.spacing
     LazyVerticalGrid(
@@ -316,6 +358,9 @@ private fun SearchShimmerGrid(
         userScrollEnabled = false,
         modifier = modifier.fillMaxSize(),
     ) {
+        if (headerSlot != null) {
+            item(span = { GridItemSpan(maxLineSpan) }) { headerSlot() }
+        }
         items(12) {
             Card(
                 modifier = Modifier.fillMaxWidth(),

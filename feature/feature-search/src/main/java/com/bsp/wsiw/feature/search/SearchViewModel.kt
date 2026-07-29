@@ -2,6 +2,7 @@ package com.bsp.wsiw.feature.search
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
+import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.usecase.SearchMoviesUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,13 +20,14 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchMovies: SearchMoviesUseCase,
+    private val movieRepository: MovieRepository,
 ) : BaseViewModel<SearchAction, SearchEvent, SearchUiState>(
     initialState = SearchUiState(),
 ) {
-    // Internal debounce gate — not exposed; query truth lives in uiState
     private val _query = MutableStateFlow("")
 
     init {
+        loadTrending()
         viewModelScope.launch {
             _query
                 .debounce(300)
@@ -46,7 +48,6 @@ class SearchViewModel @Inject constructor(
                     }
                 }
                 .collect { searchResult ->
-                    // Propagate search outcome only — query is already set by handleAction
                     updateState {
                         copy(
                             isLoading = searchResult.isLoading,
@@ -61,13 +62,26 @@ class SearchViewModel @Inject constructor(
     override fun handleAction(action: SearchAction) {
         when (action) {
             is SearchAction.UpdateQuery -> {
-                // Immediate update so the text field never lags; clears stale results
                 updateState { copy(query = action.query, isLoading = false, movies = emptyList(), error = null) }
                 _query.value = action.query
             }
             SearchAction.ClearQuery -> {
-                updateState { SearchUiState() }
+                updateState { copy(query = "", isLoading = false, movies = emptyList(), error = null) }
                 _query.value = ""
+            }
+        }
+    }
+
+    private fun loadTrending() {
+        viewModelScope.launch {
+            movieRepository.getMoviesByCategory("trending").collect { result ->
+                when (result) {
+                    is Result.Success -> updateState {
+                        copy(trendingMovies = result.data.items, isTrendingLoading = false)
+                    }
+                    is Result.Error -> updateState { copy(isTrendingLoading = false) }
+                    Result.Loading -> Unit
+                }
             }
         }
     }
