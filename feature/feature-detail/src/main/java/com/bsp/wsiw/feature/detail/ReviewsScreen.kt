@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -110,7 +111,7 @@ private fun ReviewsContent(
                 if (sorted.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "No reviews yet",
+                            text = stringResource(R.string.reviews_empty),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -166,14 +167,14 @@ private fun ReviewsTopBar(title: String, onBack: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.cd_back),
                     tint = MaterialTheme.colorScheme.onBackground,
                 )
             }
         }
         Column {
             Text(
-                text = "Reviews",
+                text = stringResource(R.string.reviews_screen_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -198,7 +199,7 @@ private fun SortChipRow(selected: ReviewSort, onSelect: (ReviewSort) -> Unit) {
             FilterChip(
                 selected = sort == selected,
                 onClick = { onSelect(sort) },
-                label = { Text(sort.label) },
+                label = { Text(stringResource(sort.labelRes)) },
             )
         }
     }

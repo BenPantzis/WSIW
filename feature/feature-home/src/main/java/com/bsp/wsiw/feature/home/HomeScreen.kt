@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -157,7 +158,7 @@ private fun CategoryChipRow(
             FilterChip(
                 selected = category == selected,
                 onClick = { onSelect(category) },
-                label = { Text(category.label) },
+                label = { Text(stringResource(category.labelRes)) },
             )
         }
     }

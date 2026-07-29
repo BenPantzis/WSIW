@@ -73,6 +73,7 @@ import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
 import com.bsp.wsiw.core.ui.theme.AppTheme
 import com.bsp.wsiw.core.ui.util.formatTmdbDate
+import androidx.compose.ui.res.stringResource
 import kotlin.math.roundToInt
 
 private val BackdropHeight = 300.dp
@@ -348,7 +349,7 @@ private fun BookmarkButton(
         ) {
             Icon(
                 imageVector = Icons.Default.Favorite,
-                contentDescription = if (isWatchlisted) "Remove from watchlist" else "Add to watchlist",
+                contentDescription = if (isWatchlisted) stringResource(R.string.detail_cd_remove_from_watchlist) else stringResource(R.string.detail_cd_add_to_watchlist),
                 tint = if (isWatchlisted) Color(0xFFE8A020) else Color.White.copy(alpha = 0.5f),
                 modifier = Modifier.size(22.dp),
             )
@@ -367,7 +368,7 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.cd_back),
                 tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )
@@ -422,7 +423,7 @@ private fun MovieDetailCard(
                 }
 
                 Spacer(Modifier.height(spacing.xl))
-                SectionHeader("Overview")
+                SectionHeader(stringResource(R.string.detail_section_overview))
                 Spacer(Modifier.height(spacing.sm))
                 Text(
                     text = movie.overview,
@@ -432,16 +433,16 @@ private fun MovieDetailCard(
                 )
 
                 Spacer(Modifier.height(spacing.xl))
-                SectionHeader("Details")
+                SectionHeader(stringResource(R.string.detail_section_details))
                 Spacer(Modifier.height(spacing.sm))
                 if (movie.releaseDate.isNotBlank()) {
-                    DetailRow("Release Date", formatReleaseDate(movie.releaseDate))
+                    DetailRow(stringResource(R.string.detail_row_release_date), formatReleaseDate(movie.releaseDate))
                 }
                 if (movie.originalLanguage.isNotBlank()) {
-                    DetailRow("Language", movie.originalLanguage.uppercase())
+                    DetailRow(stringResource(R.string.detail_row_language), movie.originalLanguage.uppercase())
                 }
                 if (movie.runtime > 0) {
-                    DetailRow("Runtime", formatRuntime(movie.runtime))
+                    DetailRow(stringResource(R.string.detail_row_runtime), formatRuntime(movie.runtime))
                 }
                 DetailRow("Score", "${(movie.voteAverage * 10).roundToInt() / 10.0} / 10 (${movie.voteCount.formatCount()} votes)")
             }
@@ -449,7 +450,7 @@ private fun MovieDetailCard(
             // Trailer
             if (movie.trailer != null) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader("Trailer", modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_trailer), modifier = Modifier.padding(horizontal = 20.dp))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 TrailerButton(
                     trailer = movie.trailer!!,
@@ -460,7 +461,7 @@ private fun MovieDetailCard(
             // Cast
             if (movie.cast.isNotEmpty()) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader("Cast", modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_cast), modifier = Modifier.padding(horizontal = 20.dp))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 LazyRow(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
@@ -473,7 +474,7 @@ private fun MovieDetailCard(
             // Similar movies
             if (movie.similarMovies.isNotEmpty()) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader("More Like This", modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_more_like_this), modifier = Modifier.padding(horizontal = 20.dp))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 LazyRow(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
@@ -816,7 +817,7 @@ private fun InlineReviewsSection(
             border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.7f)),
         ) {
             Text(
-                text = "See all reviews",
+                text = stringResource(R.string.detail_see_all_reviews),
                 color = accent,
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.weight(1f),

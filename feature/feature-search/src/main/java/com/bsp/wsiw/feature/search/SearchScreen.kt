@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -138,7 +139,7 @@ private fun SearchTextField(
             .focusRequester(focusRequester),
         placeholder = {
             Text(
-                text = "Search movies…",
+                text = stringResource(R.string.search_placeholder),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -155,7 +156,7 @@ private fun SearchTextField(
                 IconButton(onClick = onClear) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear",
+                        contentDescription = stringResource(R.string.search_cd_clear),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -211,12 +212,12 @@ private fun TrendingIdleState(
             ) {
                 Text(text = "🎬", style = MaterialTheme.typography.displayMedium)
                 Text(
-                    text = "Find your next watch",
+                    text = stringResource(R.string.search_idle_headline),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Search by title, keyword, or actor",
+                    text = stringResource(R.string.search_idle_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -232,7 +233,7 @@ private fun TrendingHeader() {
     Column {
         Spacer(Modifier.height(spacing.sm))
         Text(
-            text = "Trending",
+            text = stringResource(R.string.search_trending_header),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -254,13 +255,13 @@ private fun NoResultsState(query: String) {
         ) {
             Text(text = "🔍", style = MaterialTheme.typography.displayMedium)
             Text(
-                text = "No results for $query",
+                text = stringResource(R.string.search_no_results_title, query),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "Try a different title or keyword",
+                text = stringResource(R.string.search_no_results_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

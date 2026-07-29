@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -110,7 +111,7 @@ private fun PersonContent(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.cd_back),
                     tint = Color.White,
                     modifier = Modifier.size(20.dp),
                 )
@@ -196,7 +197,7 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
                 if (person.biography.isNotBlank()) {
                     Spacer(Modifier.height(spacing.xl))
                     Text(
-                        text = "Biography",
+                        text = stringResource(R.string.person_section_biography),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -213,7 +214,7 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
                 if (person.filmography.isNotEmpty()) {
                     Spacer(Modifier.height(spacing.xl))
                     Text(
-                        text = "Known For",
+                        text = stringResource(R.string.person_section_known_for),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -242,8 +243,8 @@ private fun PersonInfoRow(person: PersonDetail) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         val birthday = person.birthday
         val placeOfBirth = person.placeOfBirth
-        if (birthday != null) InfoLine(label = "Born", value = formatTmdbDate(birthday))
-        if (placeOfBirth != null) InfoLine(label = "From", value = placeOfBirth)
+        if (birthday != null) InfoLine(label = stringResource(R.string.person_info_born), value = formatTmdbDate(birthday))
+        if (placeOfBirth != null) InfoLine(label = stringResource(R.string.person_info_from), value = placeOfBirth)
     }
 }
 

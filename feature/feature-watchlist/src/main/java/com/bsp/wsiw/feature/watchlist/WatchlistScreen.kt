@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -193,7 +194,7 @@ private fun WatchlistPosterCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
-                        contentDescription = "Remove from watchlist",
+                        contentDescription = stringResource(R.string.watchlist_cd_remove),
                         tint = Color(0xFFE8A020),
                         modifier = Modifier.size(16.dp),
                     )
@@ -239,19 +240,19 @@ private fun WatchlistEmptyState(
         ) {
             Text(text = "🔖", style = MaterialTheme.typography.displayMedium)
             Text(
-                text = "Your watchlist is empty",
+                text = stringResource(R.string.watchlist_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Bookmark movies on their detail page to save them here",
+                text = stringResource(R.string.watchlist_empty_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(AppTheme.spacing.sm))
             Button(onClick = onBrowseMovies) {
-                Text("Browse movies")
+                Text(stringResource(R.string.watchlist_browse_button))
             }
         }
     }

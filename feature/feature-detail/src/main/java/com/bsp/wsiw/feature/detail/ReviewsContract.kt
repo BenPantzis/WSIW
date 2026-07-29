@@ -1,12 +1,13 @@
 package com.bsp.wsiw.feature.detail
 
+import androidx.annotation.StringRes
 import com.bsp.wsiw.core.domain.model.Review
 
-enum class ReviewSort(val label: String) {
-    Newest("Newest"),
-    Oldest("Oldest"),
-    HighestRated("Highest Rated"),
-    LowestRated("Lowest Rated"),
+enum class ReviewSort(@param:StringRes val labelRes: Int) {
+    Newest(R.string.reviews_sort_newest),
+    Oldest(R.string.reviews_sort_oldest),
+    HighestRated(R.string.reviews_sort_highest_rated),
+    LowestRated(R.string.reviews_sort_lowest_rated),
 }
 
 sealed interface ReviewsAction {

@@ -1,0 +1,28 @@
+<resources>
+    <!-- Shared within feature-detail -->
+    <string name="cd_back">Back</string>
+    <!-- Movie detail screen -->
+    <string name="detail_section_overview">Overview</string>
+    <string name="detail_section_details">Details</string>
+    <string name="detail_row_release_date">Release Date</string>
+    <string name="detail_row_language">Language</string>
+    <string name="detail_row_runtime">Runtime</string>
+    <string name="detail_section_trailer">Trailer</string>
+    <string name="detail_section_cast">Cast</string>
+    <string name="detail_section_more_like_this">More Like This</string>
+    <string name="detail_cd_add_to_watchlist">Add to watchlist</string>
+    <string name="detail_cd_remove_from_watchlist">Remove from watchlist</string>
+    <string name="detail_see_all_reviews">See all reviews</string>
+    <!-- Person screen -->
+    <string name="person_section_biography">Biography</string>
+    <string name="person_section_known_for">Known For</string>
+    <string name="person_info_born">Born</string>
+    <string name="person_info_from">From</string>
+    <!-- Reviews screen -->
+    <string name="reviews_screen_title">Reviews</string>
+    <string name="reviews_empty">No reviews yet</string>
+    <string name="reviews_sort_newest">Newest</string>
+    <string name="reviews_sort_oldest">Oldest</string>
+    <string name="reviews_sort_highest_rated">Highest Rated</string>
+    <string name="reviews_sort_lowest_rated">Lowest Rated</string>
+</resources>

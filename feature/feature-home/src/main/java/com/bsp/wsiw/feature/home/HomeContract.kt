@@ -1,15 +1,16 @@
 package com.bsp.wsiw.feature.home
 
+import androidx.annotation.StringRes
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 
-enum class HomeCategory(val label: String, val apiKey: String?) {
-    Popular("Popular", null),
-    Trending("Trending", "trending"),
-    TopRated("Top Rated", "top_rated"),
-    NowPlaying("Now Playing", "now_playing"),
-    Upcoming("Upcoming", "upcoming"),
-    ByGenre("By Genre", null),
+enum class HomeCategory(@param:StringRes val labelRes: Int, val apiKey: String?) {
+    Popular(R.string.home_category_popular, null),
+    Trending(R.string.home_category_trending, "trending"),
+    TopRated(R.string.home_category_top_rated, "top_rated"),
+    NowPlaying(R.string.home_category_now_playing, "now_playing"),
+    Upcoming(R.string.home_category_upcoming, "upcoming"),
+    ByGenre(R.string.home_category_by_genre, null),
 }
 
 sealed interface HomeAction {
