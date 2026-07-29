@@ -167,7 +167,6 @@ private fun CollapsingDetailContent(
                 backdropHeightPx = backdropHeightPx,
             )
             ContentList(movie = movie, listState = listState)
-            // Above ContentList in z-order so it's interactable and not clipped by the card surface
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
                 onClick = onToggleWatchlist,
@@ -222,7 +221,6 @@ private fun BackdropLayer(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
         )
-        // Gradient fade with subtle accent scrim
         val accent = LocalAccentColor.current
         Box(
             modifier = Modifier

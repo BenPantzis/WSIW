@@ -61,6 +61,8 @@ dependencies {
     implementation(project(":feature:feature-search"))
     implementation(project(":feature:feature-watchlist"))
 
+    implementation(catalog.findLibrary("androidx-navigation3-ui").get())
+
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
     implementation("androidx.compose.material:material-icons-core")
 

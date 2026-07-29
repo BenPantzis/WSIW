@@ -196,7 +196,6 @@ private fun MoviePosterCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -209,7 +208,6 @@ private fun MoviePosterCard(
                         ),
                     ),
             )
-
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)

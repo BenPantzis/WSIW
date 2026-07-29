@@ -178,7 +178,6 @@ private fun WatchlistPosterCard(
                         ),
                     ),
             )
-            // Saved bookmark — tap to remove
             IconButton(
                 onClick = onRemove,
                 modifier = Modifier

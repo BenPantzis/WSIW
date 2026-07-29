@@ -5,8 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
@@ -96,6 +103,27 @@ private fun WsiwApp() {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
+            transitionSpec = {
+                if (targetState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                    (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
+                } else {
+                    fadeIn() togetherWith fadeOut()
+                }
+            },
+            popTransitionSpec = {
+                if (initialState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                    EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
+                } else {
+                    fadeIn() togetherWith fadeOut()
+                }
+            },
+            predictivePopTransitionSpec = {
+                if (initialState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                    EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
+                } else {
+                    fadeIn() togetherWith fadeOut()
+                }
+            },
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(),
