@@ -29,4 +29,6 @@ dependencies {
 
     implementation(catalog.findLibrary("androidx-palette").get())
     implementation(catalog.findLibrary("coil-compose").get())
+
+    testImplementation(project(":core:core-testing"))
 }
