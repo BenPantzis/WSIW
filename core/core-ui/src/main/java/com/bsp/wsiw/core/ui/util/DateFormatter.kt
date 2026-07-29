@@ -1,12 +1,16 @@
 package com.bsp.wsiw.core.ui.util
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+private val MONTHS = arrayOf(
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+)
 
-private val DISPLAY_FORMAT = DateTimeFormatter.ofPattern("MMMM d, yyyy")
-
-fun formatTmdbDate(raw: String): String = try {
-    LocalDate.parse(raw).format(DISPLAY_FORMAT)
-} catch (_: Exception) {
-    raw
+fun formatTmdbDate(raw: String): String {
+    val parts = raw.split("-")
+    if (parts.size != 3) return raw
+    val year = parts[0]
+    val monthIndex = parts[1].toIntOrNull()?.minus(1) ?: return raw
+    val day = parts[2].toIntOrNull() ?: return raw
+    val month = MONTHS.getOrNull(monthIndex) ?: return raw
+    return "$month $day, $year"
 }
