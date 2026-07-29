@@ -1,7 +1,5 @@
 package com.bsp.wsiw.feature.detail
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
@@ -9,8 +7,10 @@ import com.bsp.wsiw.core.ui.BaseViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 
+@HiltViewModel(assistedFactory = PersonViewModel.Factory::class)
 class PersonViewModel @AssistedInject constructor(
     @Assisted private val personId: Int,
     private val repository: MovieRepository,
