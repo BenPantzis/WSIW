@@ -68,6 +68,8 @@ import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.model.VideoEntry
+import com.bsp.wsiw.core.domain.model.WatchProvider
+import com.bsp.wsiw.core.domain.model.WatchProviders
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.ErrorContent
@@ -155,6 +157,7 @@ internal fun DetailContent(
             onToggleWatchlist = { onAction(DetailAction.ToggleWatchlist) },
             isRefreshing = uiState.isRefreshing,
             snackbarHostState = snackbarHostState,
+            watchProviders = uiState.watchProviders,
         )
     }
 }
@@ -175,6 +178,7 @@ private fun CollapsingDetailContent(
     onToggleWatchlist: () -> Unit,
     isRefreshing: Boolean,
     snackbarHostState: SnackbarHostState,
+    watchProviders: WatchProviders? = null,
 ) {
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -212,7 +216,7 @@ private fun CollapsingDetailContent(
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
                     .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = 16.dp),
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
+            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount, watchProviders = watchProviders)
             TopBar(
                 title = movie.title,
                 scrollFraction = scrollFraction,
@@ -285,6 +289,7 @@ private fun ContentList(
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
     previewReviews: List<Review>,
     totalReviewCount: Int,
+    watchProviders: WatchProviders? = null,
 ) {
     LazyColumn(
         state = listState,
@@ -294,7 +299,7 @@ private fun ContentList(
             Spacer(modifier = Modifier.height(BackdropHeight - ContentOverlap))
         }
         item {
-            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
+            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount, watchProviders = watchProviders)
         }
     }
 }
@@ -389,6 +394,7 @@ private fun MovieDetailCard(
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
     previewReviews: List<Review>,
     totalReviewCount: Int,
+    watchProviders: WatchProviders? = null,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -474,20 +480,32 @@ private fun MovieDetailCard(
                 }
             }
 
-            // Similar movies
-            if (movie.similarMovies.isNotEmpty()) {
+            // Where to Watch
+            if (watchProviders != null && !watchProviders.isEmpty) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader(stringResource(R.string.detail_section_more_like_this), modifier = Modifier.padding(horizontal = spacing.content))
+                SectionHeader(stringResource(R.string.detail_section_where_to_watch), modifier = Modifier.padding(horizontal = spacing.content))
+                Spacer(Modifier.height(AppTheme.spacing.sm))
+                WatchProvidersSection(
+                    providers = watchProviders,
+                    modifier = Modifier.padding(horizontal = spacing.content),
+                )
+            }
+
+            // Recommended / Similar movies
+            val displayMovies = movie.recommendedMovies.ifEmpty { movie.similarMovies }
+            if (displayMovies.isNotEmpty()) {
+                Spacer(Modifier.height(AppTheme.spacing.xl))
+                SectionHeader(stringResource(R.string.detail_section_recommended), modifier = Modifier.padding(horizontal = spacing.content))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 LazyRow(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = spacing.content),
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
                 ) {
-                    items(movie.similarMovies) { similar ->
+                    items(displayMovies) { movie ->
                         MovieThumbnailCard(
-                            posterUrl = similar.posterUrl,
-                            title = similar.title,
-                            onClick = { onMovieClick(similar.id) },
+                            posterUrl = movie.posterUrl,
+                            title = movie.title,
+                            onClick = { onMovieClick(movie.id) },
                         )
                     }
                 }
@@ -602,6 +620,14 @@ private fun StatsRow(movie: MovieDetail) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        if (movie.certification != null) {
+            Text(
+                text = "•",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            CertificationBadge(certification = movie.certification!!)
         }
     }
 }
@@ -824,6 +850,56 @@ private fun InlineReviewCard(review: Review) {
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
         )
+    }
+}
+
+// --- New: Certification badge ---
+
+@Composable
+private fun CertificationBadge(certification: String) {
+    Text(
+        text = certification,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
+            .padding(horizontal = 5.dp, vertical = 2.dp),
+    )
+}
+
+// --- New: Watch providers ---
+
+@Composable
+private fun WatchProvidersSection(providers: WatchProviders, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm)) {
+        if (providers.streaming.isNotEmpty()) ProviderRow(label = stringResource(R.string.detail_providers_stream), providers = providers.streaming)
+        if (providers.rent.isNotEmpty()) ProviderRow(label = stringResource(R.string.detail_providers_rent), providers = providers.rent)
+        if (providers.buy.isNotEmpty()) ProviderRow(label = stringResource(R.string.detail_providers_buy), providers = providers.buy)
+    }
+}
+
+@Composable
+private fun ProviderRow(label: String, providers: List<WatchProvider>) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(44.dp),
+        )
+        providers.forEach { provider ->
+            RemoteImage(
+                url = provider.logoUrl,
+                contentDescription = provider.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(MaterialTheme.shapes.small),
+            )
+        }
     }
 }
 

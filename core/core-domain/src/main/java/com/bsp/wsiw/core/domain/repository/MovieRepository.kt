@@ -7,6 +7,7 @@ import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.PersonDetail
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.domain.model.WatchProviders
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -18,4 +19,5 @@ interface MovieRepository {
     fun getMovieDetail(movieId: Int): Flow<Result<MovieDetail>>
     fun getPersonDetail(personId: Int): Flow<Result<PersonDetail>>
     fun getMovieReviews(movieId: Int, page: Int = 1): Flow<Result<PagedResult<Review>>>
+    fun getWatchProviders(movieId: Int): Flow<Result<WatchProviders>>
 }

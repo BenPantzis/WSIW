@@ -16,4 +16,6 @@ data class MovieDetail(
     val trailer: VideoEntry? = null,
     val cast: List<CastMember> = emptyList(),
     val similarMovies: List<Movie> = emptyList(),
+    val recommendedMovies: List<Movie> = emptyList(),
+    val certification: String? = null,
 )

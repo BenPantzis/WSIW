@@ -11,6 +11,11 @@
     <string name="detail_section_trailer">Trailer</string>
     <string name="detail_section_cast">Cast</string>
     <string name="detail_section_more_like_this">More Like This</string>
+    <string name="detail_section_recommended">Recommended</string>
+    <string name="detail_section_where_to_watch">Where to Watch</string>
+    <string name="detail_providers_stream">Stream</string>
+    <string name="detail_providers_rent">Rent</string>
+    <string name="detail_providers_buy">Buy</string>
     <string name="detail_cd_add_to_watchlist">Add to watchlist</string>
     <string name="detail_cd_remove_from_watchlist">Remove from watchlist</string>
     <string name="detail_see_all_reviews">See all reviews</string>

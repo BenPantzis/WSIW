@@ -2,6 +2,7 @@ package com.bsp.wsiw.feature.detail
 
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.domain.model.WatchProviders
 import com.bsp.wsiw.core.ui.UiText
 
 sealed interface DetailAction {
@@ -22,4 +23,5 @@ data class DetailUiState(
     val isRefreshing: Boolean = false,
     val previewReviews: List<Review> = emptyList(),
     val totalReviewCount: Int = 0,
+    val watchProviders: WatchProviders? = null,
 )

@@ -18,6 +18,8 @@ data class MovieDetailDto(
     val videos: VideoResultsDto? = null,
     val credits: CreditsDto? = null,
     val similar: MovieListResponseDto? = null,
+    val recommendations: MovieListResponseDto? = null,
+    @SerializedName("release_dates") val releaseDates: ReleaseDatesWrapperDto? = null,
 )
 
 data class GenreDto(

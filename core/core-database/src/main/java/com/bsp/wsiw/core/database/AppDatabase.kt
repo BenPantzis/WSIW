@@ -15,7 +15,7 @@ import com.bsp.wsiw.core.database.entity.WatchlistEntity
 
 @Database(
     entities = [WatchlistEntity::class, PopularMovieEntity::class, MovieDetailEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -69,6 +69,13 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN trailerName TEXT")
                 db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN cast TEXT NOT NULL DEFAULT '[]'")
                 db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN similarMovies TEXT NOT NULL DEFAULT '[]'")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN recommendedMovies TEXT NOT NULL DEFAULT '[]'")
+                db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN certification TEXT")
             }
         }
     }

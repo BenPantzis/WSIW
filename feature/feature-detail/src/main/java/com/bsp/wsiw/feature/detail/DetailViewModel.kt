@@ -47,6 +47,7 @@ class DetailViewModel @AssistedInject constructor(
     init {
         loadDetail()
         loadReviewPreview()
+        loadWatchProviders()
         viewModelScope.launch {
             isWatchlisted(movieId).collect { watchlisted ->
                 updateState { copy(isWatchlisted = watchlisted) }
@@ -73,6 +74,16 @@ class DetailViewModel @AssistedInject constructor(
                         ),
                         isWatchlisted = uiState.value.isWatchlisted,
                     )
+                }
+            }
+        }
+    }
+
+    private fun loadWatchProviders() {
+        viewModelScope.launch {
+            movieRepository.getWatchProviders(movieId).collect { result ->
+                if (result is com.bsp.wsiw.core.common.Result.Success && !result.data.isEmpty) {
+                    updateState { copy(watchProviders = result.data) }
                 }
             }
         }

@@ -5,6 +5,7 @@ import com.bsp.wsiw.core.data.remote.model.MovieDetailDto
 import com.bsp.wsiw.core.data.remote.model.MovieListResponseDto
 import com.bsp.wsiw.core.data.remote.model.PersonDetailDto
 import com.bsp.wsiw.core.data.remote.model.ReviewListResponseDto
+import com.bsp.wsiw.core.data.remote.model.WatchProvidersResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -78,6 +79,11 @@ interface TmdbApiService {
     suspend fun getMovieDetail(
         @Path("movieId") movieId: Int,
         @Query("language") language: String = "en-US",
-        @Query("append_to_response") appendToResponse: String = "videos,credits,similar",
+        @Query("append_to_response") appendToResponse: String = "videos,credits,similar,recommendations,release_dates",
     ): MovieDetailDto
+
+    @GET("movie/{movieId}/watch/providers")
+    suspend fun getMovieWatchProviders(
+        @Path("movieId") movieId: Int,
+    ): WatchProvidersResponseDto
 }

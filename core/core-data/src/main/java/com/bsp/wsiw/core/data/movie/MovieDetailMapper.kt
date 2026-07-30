@@ -3,6 +3,7 @@ package com.bsp.wsiw.core.data.movie
 import com.bsp.wsiw.core.data.remote.model.CastMemberDto
 import com.bsp.wsiw.core.data.remote.model.GenreDto
 import com.bsp.wsiw.core.data.remote.model.MovieDetailDto
+import com.bsp.wsiw.core.data.remote.model.ReleaseDatesWrapperDto
 import com.bsp.wsiw.core.database.entity.MovieDetailEntity
 import com.bsp.wsiw.core.domain.model.CastMember
 import com.bsp.wsiw.core.domain.model.Genre
@@ -40,7 +41,21 @@ fun MovieDetailDto.toDomain() = MovieDetail(
         ?.take(10)
         ?.map { it.toDomain() }
         ?: emptyList(),
+    recommendedMovies = recommendations?.results
+        ?.take(10)
+        ?.map { it.toDomain() }
+        ?: emptyList(),
+    certification = extractCertification(releaseDates),
 )
+
+private fun extractCertification(releaseDates: ReleaseDatesWrapperDto?): String? {
+    val usEntries = releaseDates?.results
+        ?.firstOrNull { it.country == "US" }
+        ?.releaseDates
+        ?: return null
+    return usEntries.firstOrNull { it.type == 3 && it.certification.isNotBlank() }?.certification
+        ?: usEntries.firstOrNull { it.certification.isNotBlank() }?.certification
+}
 
 private fun GenreDto.toDomain() = Genre(id = id, name = name)
 
@@ -74,5 +89,7 @@ fun MovieDetailDto.toEntity() = MovieDetailEntity(
         ?.name,
     cast = credits?.cast?.sortedBy { it.order }?.take(10)?.map { it.toDomain() } ?: emptyList(),
     similarMovies = similar?.results?.take(10)?.map { it.toDomain() } ?: emptyList(),
+    recommendedMovies = recommendations?.results?.take(10)?.map { it.toDomain() } ?: emptyList(),
+    certification = extractCertification(releaseDates),
     cachedAt = System.currentTimeMillis(),
 )

@@ -13,6 +13,8 @@ import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.PersonDetail
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.domain.model.WatchProvider
+import com.bsp.wsiw.core.domain.model.WatchProviders
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -114,6 +116,25 @@ class MovieRepositoryImpl @Inject constructor(
                     )
                 },
                 totalPages = response.totalPages,
+            )
+        })
+    }
+
+    override fun getWatchProviders(movieId: Int): Flow<Result<WatchProviders>> = flow {
+        emit(safeApiCall {
+            val response = apiService.getMovieWatchProviders(movieId)
+            val region = java.util.Locale.getDefault().country.ifEmpty { "US" }
+            val country = response.results[region] ?: response.results["US"]
+            WatchProviders(
+                streaming = country?.flatrate?.sortedBy { it.displayPriority }?.take(5)
+                    ?.mapNotNull { it.logoPath?.let { path -> WatchProvider(it.providerName, "https://image.tmdb.org/t/p/original$path") } }
+                    ?: emptyList(),
+                rent = country?.rent?.sortedBy { it.displayPriority }?.take(4)
+                    ?.mapNotNull { it.logoPath?.let { path -> WatchProvider(it.providerName, "https://image.tmdb.org/t/p/original$path") } }
+                    ?: emptyList(),
+                buy = country?.buy?.sortedBy { it.displayPriority }?.take(4)
+                    ?.mapNotNull { it.logoPath?.let { path -> WatchProvider(it.providerName, "https://image.tmdb.org/t/p/original$path") } }
+                    ?: emptyList(),
             )
         })
     }

@@ -27,6 +27,8 @@ data class MovieDetailEntity(
     val trailerName: String? = null,
     val cast: List<CastMember> = emptyList(),
     val similarMovies: List<Movie> = emptyList(),
+    val recommendedMovies: List<Movie> = emptyList(),
+    val certification: String? = null,
 )
 
 fun MovieDetailEntity.toDomain() = MovieDetail(
@@ -45,4 +47,6 @@ fun MovieDetailEntity.toDomain() = MovieDetail(
     trailer = if (trailerKey != null && trailerName != null) VideoEntry(trailerKey, trailerName) else null,
     cast = cast,
     similarMovies = similarMovies,
+    recommendedMovies = recommendedMovies,
+    certification = certification,
 )
