@@ -1,16 +1,16 @@
-package com.bsp.wsiw.core.datastore.auth
+package com.bsp.wsiw.core.data.auth
 
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.bsp.wsiw.core.common.auth.TokenProvider
+import com.bsp.wsiw.core.data.di.StaticToken
 import com.bsp.wsiw.core.datastore.PreferencesRepository
-import com.bsp.wsiw.core.datastore.di.StaticToken
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DataStoreTokenProvider @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
-    @StaticToken private val staticToken: String,
+    @param:StaticToken private val staticToken: String,
 ) : TokenProvider {
 
     companion object {

@@ -1,7 +1,7 @@
 package com.bsp.wsiw.di
 
 import com.bsp.wsiw.core.common.auth.TokenProvider
-import com.bsp.wsiw.core.datastore.auth.DataStoreTokenProvider
+import com.bsp.wsiw.core.data.auth.DataStoreTokenProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

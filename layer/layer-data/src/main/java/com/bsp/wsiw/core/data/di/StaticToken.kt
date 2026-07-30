@@ -1,4 +1,4 @@
-package com.bsp.wsiw.core.datastore.di
+package com.bsp.wsiw.core.data.di
 
 import javax.inject.Qualifier
 

@@ -12,7 +12,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:core-common"))
     api(catalog.findLibrary("datastore-preferences").get())
     implementation(catalog.findLibrary("coroutines-android").get())
 }
