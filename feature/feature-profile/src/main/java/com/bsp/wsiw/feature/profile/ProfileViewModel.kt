@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TMDB_APPROVE_BASE = "https://www.themoviedb.org/auth/access"
-private const val CALLBACK_URL = "wsiw://auth/callback"
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -45,6 +44,10 @@ class ProfileViewModel @Inject constructor(
         when (action) {
             ProfileAction.SignIn -> startSignIn()
             ProfileAction.SignOut -> signOut()
+            ProfileAction.CompleteSignIn -> completeSignIn()
+            ProfileAction.CancelSignIn -> updateState {
+                copy(pendingRequestToken = null, isExchangingToken = false, error = null)
+            }
         }
     }
 
@@ -53,10 +56,26 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val requestToken = authRepository.getRequestToken()
-                val url = "$TMDB_APPROVE_BASE?request_token=$requestToken&redirect_to=$CALLBACK_URL"
+                val url = "$TMDB_APPROVE_BASE?request_token=$requestToken"
+                updateState { copy(isSigningIn = false, pendingRequestToken = requestToken) }
                 sendEvent(ProfileEvent.OpenBrowser(url))
             } catch (_: Exception) {
                 updateState { copy(isSigningIn = false, error = "Couldn't reach TMDB. Check your connection.") }
+            }
+        }
+    }
+
+    private fun completeSignIn() {
+        val token = uiState.value.pendingRequestToken ?: return
+        updateState { copy(isExchangingToken = true, error = null) }
+        viewModelScope.launch {
+            try {
+                authRepository.createUserSession(token)
+                updateState { copy(pendingRequestToken = null, isExchangingToken = false) }
+            } catch (_: Exception) {
+                updateState {
+                    copy(isExchangingToken = false, error = "Sign-in failed. Make sure you approved the request on TMDB.")
+                }
             }
         }
     }

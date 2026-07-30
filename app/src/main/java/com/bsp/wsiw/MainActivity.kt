@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -91,6 +92,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        intent?.data?.extractAuthToken()?.let { pendingAuthToken.value = it }
+
         setContent {
             WSIWTheme {
                 WsiwApp(
@@ -103,11 +106,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val uri = intent.data ?: return
-        if (uri.scheme == "wsiw" && uri.host == "auth") {
-            pendingAuthToken.value = uri.getQueryParameter("request_token")
-        }
+        intent.data?.extractAuthToken()?.let { pendingAuthToken.value = it }
     }
+
+    private fun Uri.extractAuthToken(): String? =
+        if (scheme == "wsiw" && host == "auth") getQueryParameter("request_token") else null
 
     private fun runLetterboxAnimation(provider: SplashScreenViewProvider, decor: ViewGroup) {
         val screenH = decor.height

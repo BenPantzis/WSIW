@@ -2,6 +2,10 @@ package com.bsp.wsiw.core.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 
+data class RequestTokenBody(
+    @SerializedName("redirect_to") val redirectTo: String,
+)
+
 data class RequestTokenDto(
     @SerializedName("request_token") val requestToken: String = "",
     val success: Boolean = false,

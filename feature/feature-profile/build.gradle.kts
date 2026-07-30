@@ -26,6 +26,7 @@ dependencies {
     implementation(catalog.findLibrary("hilt-navigation-compose").get())
     implementation(catalog.findLibrary("kotlinx-serialization-core").get())
     implementation(catalog.findLibrary("coil-compose").get())
+    implementation(catalog.findLibrary("androidx-browser").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
     implementation("androidx.compose.material:material-icons-extended")

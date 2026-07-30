@@ -1,7 +1,7 @@
 package com.bsp.wsiw.feature.profile
 
-import android.content.Intent
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -38,25 +38,85 @@ fun ProfileScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is ProfileEvent.OpenBrowser -> {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url))
-                    context.startActivity(intent)
+                    CustomTabsIntent.Builder().build()
+                        .launchUrl(context, Uri.parse(event.url))
                 }
             }
         }
     }
 
-    if (state.isAuthenticated) {
-        AuthenticatedContent(
+    when {
+        state.isAuthenticated -> AuthenticatedContent(
             accountName = state.accountName ?: "",
             avatarUrl = state.avatarUrl,
             onSignOut = { viewModel.onAction(ProfileAction.SignOut) },
         )
-    } else {
-        UnauthenticatedContent(
+        state.isAwaitingApproval -> AwaitingApprovalContent(
+            isLoading = state.isExchangingToken,
+            error = state.error,
+            onContinue = { viewModel.onAction(ProfileAction.CompleteSignIn) },
+            onCancel = { viewModel.onAction(ProfileAction.CancelSignIn) },
+        )
+        else -> UnauthenticatedContent(
             isLoading = state.isSigningIn,
             error = state.error,
             onSignIn = { viewModel.onAction(ProfileAction.SignIn) },
         )
+    }
+}
+
+@Composable
+private fun AwaitingApprovalContent(
+    isLoading: Boolean,
+    error: String?,
+    onContinue: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "Approve on TMDB",
+            style = MaterialTheme.typography.titleLarge,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "After approving in the browser, tap Continue to complete sign-in.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(32.dp))
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Button(
+                onClick = onContinue,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Continue")
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Cancel")
+            }
+        }
+        if (error != null) {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = error,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 

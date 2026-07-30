@@ -44,6 +44,9 @@ coil = "2.7.0"
 # --- Palette ---
 palette = "1.0.0"
 
+# --- Browser (Custom Tabs) ---
+browser = "1.8.0"
+
 # --- Splash screen ---
 splashscreen = "1.0.1"
 
@@ -117,6 +120,9 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 
 # Palette
 androidx-palette = { group = "androidx.palette", name = "palette-ktx", version.ref = "palette" }
+
+# Browser (Custom Tabs)
+androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 # Splash screen
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
