@@ -10,4 +10,6 @@
     <string name="watchlist_cd_toggle_grid">Switch to grid view</string>
     <string name="watchlist_cd_toggle_list">Switch to list view</string>
     <string name="watchlist_action_undo">Undo</string>
+    <string name="watchlist_title_with_count">Watchlist  •  %d</string>
+    <string name="watchlist_your_rating">· Your rating: %s</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.bsp.wsiw.feature.watchlist
 
 import androidx.compose.foundation.background
+import com.bsp.wsiw.core.ui.theme.GoldDefault
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +67,9 @@ import com.bsp.wsiw.core.ui.component.ScreenScaffold
 import com.bsp.wsiw.core.ui.component.ShimmerPosterCard
 import com.bsp.wsiw.core.ui.theme.AppTheme
 import kotlin.math.roundToInt
+
+private val ButtonScrim = Color(0x99000000)  // semi-transparent scrim behind icon buttons
+private val BadgeScrim = Color(0xCC000000)   // slightly more opaque scrim for rating badges
 
 @Composable
 fun WatchlistScreen(
@@ -162,7 +166,7 @@ private fun SortAndToggleHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Watchlist  •  $count",
+                text = stringResource(R.string.watchlist_title_with_count, count),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
@@ -255,7 +259,7 @@ private fun WatchlistPosterCard(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .size(28.dp)
-                        .background(Color(0x99000000), CircleShape),
+                        .background(ButtonScrim, CircleShape),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
@@ -271,13 +275,13 @@ private fun WatchlistPosterCard(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(AppTheme.spacing.xs)
-                        .background(Color(0xCC000000), RoundedCornerShape(12.dp))
+                        .background(BadgeScrim, RoundedCornerShape(12.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = Color(0xFFFFD700),
+                        tint = GoldDefault,
                         modifier = Modifier.size(10.dp),
                     )
                     Spacer(Modifier.width(2.dp))
@@ -418,9 +422,9 @@ private fun WatchlistListItem(
                         )
                         if (userRating != null) {
                             Text(
-                                text = "· Your rating: ${"★".repeat((userRating / 2f).roundToInt())}",
+                                text = stringResource(R.string.watchlist_your_rating, "★".repeat((userRating / 2f).roundToInt())),
                                 style = MaterialTheme.typography.labelMedium,
-                                color = Color(0xFFFFD700),
+                                color = GoldDefault,
                             )
                         }
                     }

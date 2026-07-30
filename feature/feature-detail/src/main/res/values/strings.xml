@@ -19,6 +19,17 @@
     <string name="detail_cd_add_to_watchlist">Add to watchlist</string>
     <string name="detail_cd_remove_from_watchlist">Remove from watchlist</string>
     <string name="detail_see_all_reviews">See all reviews</string>
+    <string name="detail_section_reviews">Reviews</string>
+    <string name="detail_section_reviews_with_count">Reviews (%d)</string>
+    <string name="detail_row_score">Score</string>
+    <string name="detail_score_value">%1$s / 10 (%2$s votes)</string>
+    <!-- Rating UI -->
+    <string name="detail_sign_in_required">Sign in to save movies to your watchlist</string>
+    <string name="detail_rate_this_film">Rate this film</string>
+    <string name="detail_drag_to_rate">Drag or tap to rate</string>
+    <string name="detail_rating_display">%s / 10</string>
+    <string name="detail_rate_button">Rate</string>
+    <string name="detail_clear_rating">Clear rating</string>
     <!-- Person screen -->
     <string name="person_section_biography">Biography</string>
     <string name="person_section_known_for">Known For</string>

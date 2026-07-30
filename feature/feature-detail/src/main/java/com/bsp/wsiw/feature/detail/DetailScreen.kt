@@ -101,6 +101,7 @@ import com.bsp.wsiw.core.domain.model.VideoEntry
 import com.bsp.wsiw.core.domain.model.WatchProvider
 import com.bsp.wsiw.core.domain.model.WatchProviders
 import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.theme.GoldDefault
 import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
@@ -112,7 +113,11 @@ import kotlin.math.roundToInt
 
 private val BackdropHeight = 300.dp
 private val ContentOverlap = 32.dp
-private val GoldDefault = Color(0xFFE8A020)
+private val CardBottomPadding = 48.dp          // extra breathing room below last section
+private val TopBarTitlePadding = 56.dp         // horizontal clear for back button
+private val ButtonScrim = Color(0x99000000)    // semi-transparent scrim behind icon buttons
+private val RatingChipHPadding = 14.dp
+private val RatingChipVPadding = 7.dp
 
 private val LocalAccentColor = compositionLocalOf { GoldDefault }
 
@@ -136,7 +141,7 @@ fun DetailScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message.resolve(context))
-                DetailEvent.SignInRequired -> snackbarHostState.showSnackbar("Sign in to save movies to your watchlist")
+                DetailEvent.SignInRequired -> snackbarHostState.showSnackbar(context.getString(R.string.detail_sign_in_required))
                 is DetailEvent.RatingSubmitted -> submittedRating = event.rating
             }
         }
@@ -269,7 +274,7 @@ private fun CollapsingDetailContent(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
-                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = 16.dp),
+                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg),
             )
             ContentList(
                 movie = movie,
@@ -432,7 +437,7 @@ private fun TopBar(title: String, scrollFraction: Float, onBack: () -> Unit, isR
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = 56.dp),
+                    .padding(horizontal = TopBarTitlePadding),
             )
         }
 
@@ -459,12 +464,12 @@ private fun BookmarkButton(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(40.dp)
-                .background(Color(0x99000000), CircleShape),
+                .background(ButtonScrim, CircleShape),
         ) {
             Icon(
                 imageVector = Icons.Default.Favorite,
                 contentDescription = if (isWatchlisted) stringResource(R.string.detail_cd_remove_from_watchlist) else stringResource(R.string.detail_cd_add_to_watchlist),
-                tint = if (isWatchlisted) LocalAccentColor.current else Color.White.copy(alpha = 0.5f),
+                tint = if (isWatchlisted) LocalAccentColor.current else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 modifier = Modifier.size(22.dp),
             )
         }
@@ -478,12 +483,12 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(36.dp)
-                .background(Color(0x99000000), CircleShape),
+                .background(ButtonScrim, CircleShape),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.cd_back),
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -514,7 +519,7 @@ private fun MovieDetailCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = spacing.xl, bottom = 48.dp),
+                .padding(top = spacing.xl, bottom = CardBottomPadding),
         ) {
             Column(modifier = Modifier.padding(horizontal = spacing.content)) {
                 StatsRow(movie = movie)
@@ -565,7 +570,14 @@ private fun MovieDetailCard(
                 if (movie.runtime > 0) {
                     DetailRow(stringResource(R.string.detail_row_runtime), formatRuntime(movie.runtime))
                 }
-                DetailRow("Score", "${(movie.voteAverage * 10).roundToInt() / 10.0} / 10 (${movie.voteCount.formatCount()} votes)")
+                DetailRow(
+                    stringResource(R.string.detail_row_score),
+                    stringResource(
+                        R.string.detail_score_value,
+                        "${(movie.voteAverage * 10).roundToInt() / 10.0}",
+                        movie.voteCount.formatCount(),
+                    ),
+                )
             }
 
             // Trailer
@@ -652,7 +664,7 @@ private fun TrailerButton(trailer: VideoEntry, modifier: Modifier = Modifier) {
                 val uri = Uri.parse("https://www.youtube.com/watch?v=${trailer.key}")
                 context.startActivity(Intent(Intent.ACTION_VIEW, uri))
             }
-            .padding(horizontal = AppTheme.spacing.md, vertical = 12.dp),
+            .padding(horizontal = AppTheme.spacing.md, vertical = AppTheme.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
     ) {
@@ -888,10 +900,13 @@ private fun InlineReviewsSection(
 ) {
     val spacing = AppTheme.spacing
     val accent = LocalAccentColor.current
-    val countLabel = if (totalCount > 0) " ($totalCount)" else ""
+    val reviewsTitle = if (totalCount > 0)
+        stringResource(R.string.detail_section_reviews_with_count, totalCount)
+    else
+        stringResource(R.string.detail_section_reviews)
 
     Column(modifier = Modifier.padding(horizontal = spacing.content)) {
-        SectionHeader("Reviews$countLabel")
+        SectionHeader(reviewsTitle)
         Spacer(Modifier.height(spacing.md))
         reviews.forEach { review ->
             InlineReviewCard(review = review)
@@ -1043,7 +1058,7 @@ private fun RatingRow(
             .clickable(onClick = onClick)
             .border(1.dp, chipBorder, RoundedCornerShape(20.dp))
             .background(chipBackground, RoundedCornerShape(20.dp))
-            .padding(horizontal = 14.dp, vertical = 7.dp),
+            .padding(horizontal = RatingChipHPadding, vertical = RatingChipVPadding),
     ) {
         Text(
             text = if (isRated) "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled) else "★",
@@ -1051,7 +1066,12 @@ private fun RatingRow(
             color = if (isRated) accent else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
         Text(
-            text = if (isRated) "${userRating!!.let { if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString() }} / 10" else "Rate this film",
+            text = if (isRated) {
+                val v = userRating!!
+                stringResource(R.string.detail_rating_display, if (v == v.toLong().toFloat()) v.toInt().toString() else v.toString())
+            } else {
+                stringResource(R.string.detail_rate_this_film)
+            },
             style = MaterialTheme.typography.labelMedium,
             color = labelColor,
         )
@@ -1077,15 +1097,15 @@ private fun RatingBottomSheet(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 24.dp),
+            .padding(bottom = AppTheme.spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Movie context header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                .padding(horizontal = AppTheme.spacing.content, vertical = AppTheme.spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (posterUrl != null) {
@@ -1120,20 +1140,20 @@ private fun RatingBottomSheet(
         // Divider
         androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(AppTheme.spacing.content))
 
         // Live numeric display — above the stars so it's visible while dragging
         val displayText = liveRating?.let {
             val formatted = if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString()
-            "$formatted / 10"
-        } ?: "Drag or tap to rate"
+            stringResource(R.string.detail_rating_display, formatted)
+        } ?: stringResource(R.string.detail_drag_to_rate)
         Text(
             text = displayText,
             style = MaterialTheme.typography.bodyMedium,
             color = if (liveRating != null) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(AppTheme.spacing.md))
 
         // Stars — unified drag surface; finger position maps to rating
         var starRowWidthPx by remember { mutableStateOf(0f) }
@@ -1179,7 +1199,7 @@ private fun RatingBottomSheet(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(AppTheme.spacing.content))
 
         Button(
             onClick = { liveRating?.let(onRate) },
@@ -1187,25 +1207,25 @@ private fun RatingBottomSheet(
             colors = ButtonDefaults.buttonColors(containerColor = accentColor),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = AppTheme.spacing.content),
         ) {
             Text(
-                text = "Rate",
+                text = stringResource(R.string.detail_rate_button),
                 style = MaterialTheme.typography.labelLarge,
-                color = Color.Black.copy(alpha = 0.85f),
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
 
         if (currentRating != null) {
             TextButton(onClick = onRemove) {
                 Text(
-                    text = "Clear rating",
+                    text = stringResource(R.string.detail_clear_rating),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
         } else {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(AppTheme.spacing.sm))
         }
     }
 }

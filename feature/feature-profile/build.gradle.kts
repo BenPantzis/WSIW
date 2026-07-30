@@ -17,7 +17,6 @@ dependencies {
     implementation(project(":core:core-ui"))
     implementation(project(":core:core-common"))
     implementation(project(":layer:layer-domain"))
-    implementation(project(":layer:layer-data"))
     implementation(project(":core:core-datastore"))
 
     implementation(catalog.findLibrary("androidx-lifecycle-viewmodel").get())
