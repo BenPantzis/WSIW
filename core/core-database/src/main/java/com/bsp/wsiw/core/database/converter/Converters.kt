@@ -1,28 +1,28 @@
 package com.bsp.wsiw.core.database.converter
 
 import androidx.room.TypeConverter
-import com.bsp.wsiw.core.domain.model.CastMember
-import com.bsp.wsiw.core.domain.model.Genre
-import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.database.model.CastMemberData
+import com.bsp.wsiw.core.database.model.GenreData
+import com.bsp.wsiw.core.database.model.MovieData
 import org.json.JSONArray
 import org.json.JSONObject
 
 class Converters {
 
     @TypeConverter
-    fun genresToString(genres: List<Genre>): String =
+    fun genresToString(genres: List<GenreData>): String =
         genres.joinToString("|") { "${it.id}:${it.name}" }
 
     @TypeConverter
-    fun stringToGenres(value: String): List<Genre> =
+    fun stringToGenres(value: String): List<GenreData> =
         if (value.isEmpty()) emptyList()
         else value.split("|").map {
             val parts = it.split(":", limit = 2)
-            Genre(id = parts[0].toInt(), name = parts[1])
+            GenreData(id = parts[0].toInt(), name = parts[1])
         }
 
     @TypeConverter
-    fun castToJson(cast: List<CastMember>): String {
+    fun castToJson(cast: List<CastMemberData>): String {
         val array = JSONArray()
         for (m in cast) {
             array.put(JSONObject().apply {
@@ -36,12 +36,12 @@ class Converters {
     }
 
     @TypeConverter
-    fun jsonToCast(json: String): List<CastMember> {
+    fun jsonToCast(json: String): List<CastMemberData> {
         if (json.isEmpty() || json == "[]") return emptyList()
         val array = JSONArray(json)
         return (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
-            CastMember(
+            CastMemberData(
                 id = o.getInt("id"),
                 name = o.getString("name"),
                 character = o.getString("character"),
@@ -51,7 +51,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun moviesToJson(movies: List<Movie>): String {
+    fun moviesToJson(movies: List<MovieData>): String {
         val array = JSONArray()
         for (m in movies) {
             array.put(JSONObject().apply {
@@ -69,12 +69,12 @@ class Converters {
     }
 
     @TypeConverter
-    fun jsonToMovies(json: String): List<Movie> {
+    fun jsonToMovies(json: String): List<MovieData> {
         if (json.isEmpty() || json == "[]") return emptyList()
         val array = JSONArray(json)
         return (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
-            Movie(
+            MovieData(
                 id = o.getInt("id"),
                 title = o.getString("title"),
                 overview = o.getString("overview"),

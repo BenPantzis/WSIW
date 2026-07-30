@@ -2,11 +2,9 @@ package com.bsp.wsiw.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.bsp.wsiw.core.domain.model.CastMember
-import com.bsp.wsiw.core.domain.model.Genre
-import com.bsp.wsiw.core.domain.model.Movie
-import com.bsp.wsiw.core.domain.model.MovieDetail
-import com.bsp.wsiw.core.domain.model.VideoEntry
+import com.bsp.wsiw.core.database.model.CastMemberData
+import com.bsp.wsiw.core.database.model.GenreData
+import com.bsp.wsiw.core.database.model.MovieData
 
 @Entity(tableName = "movie_detail_cache")
 data class MovieDetailEntity(
@@ -19,34 +17,14 @@ data class MovieDetailEntity(
     val voteAverage: Double,
     val voteCount: Int,
     val tagline: String,
-    val genres: List<Genre>,
+    val genres: List<GenreData>,
     val runtime: Int,
     val originalLanguage: String,
     val cachedAt: Long,
     val trailerKey: String? = null,
     val trailerName: String? = null,
-    val cast: List<CastMember> = emptyList(),
-    val similarMovies: List<Movie> = emptyList(),
-    val recommendedMovies: List<Movie> = emptyList(),
+    val cast: List<CastMemberData> = emptyList(),
+    val similarMovies: List<MovieData> = emptyList(),
+    val recommendedMovies: List<MovieData> = emptyList(),
     val certification: String? = null,
-)
-
-fun MovieDetailEntity.toDomain() = MovieDetail(
-    id = id,
-    title = title,
-    overview = overview,
-    posterUrl = posterUrl,
-    backdropUrl = backdropUrl,
-    releaseDate = releaseDate,
-    voteAverage = voteAverage,
-    voteCount = voteCount,
-    tagline = tagline,
-    genres = genres,
-    runtime = runtime,
-    originalLanguage = originalLanguage,
-    trailer = if (trailerKey != null && trailerName != null) VideoEntry(trailerKey, trailerName) else null,
-    cast = cast,
-    similarMovies = similarMovies,
-    recommendedMovies = recommendedMovies,
-    certification = certification,
 )

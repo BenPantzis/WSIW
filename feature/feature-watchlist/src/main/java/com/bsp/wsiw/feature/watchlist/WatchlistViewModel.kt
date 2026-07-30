@@ -1,8 +1,7 @@
 package com.bsp.wsiw.feature.watchlist
 
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.viewModelScope
-import com.bsp.wsiw.core.datastore.PreferencesRepository
+import com.bsp.wsiw.core.domain.repository.WatchlistPreferences
 import com.bsp.wsiw.core.domain.usecase.GetAllRatingsUseCase
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
 import com.bsp.wsiw.core.domain.usecase.RefreshRatingsUseCase
@@ -22,13 +21,13 @@ class WatchlistViewModel @Inject constructor(
     private val refreshWatchlist: RefreshWatchlistUseCase,
     private val getAllRatings: GetAllRatingsUseCase,
     private val refreshRatings: RefreshRatingsUseCase,
-    private val preferences: PreferencesRepository,
+    private val preferences: WatchlistPreferences,
 ) : BaseViewModel<WatchlistAction, WatchlistEvent, WatchlistUiState>(
     initialState = WatchlistUiState(),
 ) {
     init {
         viewModelScope.launch {
-            val isList = preferences.preferences.first()[KEY_LIST_VIEW] ?: false
+            val isList = preferences.isListView.first()
             updateState { copy(viewMode = if (isList) WatchlistViewMode.List else WatchlistViewMode.Grid) }
         }
         viewModelScope.launch {
@@ -64,12 +63,8 @@ class WatchlistViewModel @Inject constructor(
             WatchlistAction.ToggleViewMode -> {
                 val newMode = if (uiState.value.viewMode == WatchlistViewMode.Grid) WatchlistViewMode.List else WatchlistViewMode.Grid
                 updateState { copy(viewMode = newMode) }
-                viewModelScope.launch { preferences.put(KEY_LIST_VIEW, newMode == WatchlistViewMode.List) }
+                viewModelScope.launch { preferences.setListView(newMode == WatchlistViewMode.List) }
             }
         }
-    }
-
-    private companion object {
-        val KEY_LIST_VIEW = booleanPreferencesKey("watchlist_list_view")
     }
 }

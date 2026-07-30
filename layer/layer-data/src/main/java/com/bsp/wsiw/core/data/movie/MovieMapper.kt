@@ -30,3 +30,14 @@ fun MovieDto.toEntity(page: Int) = PopularMovieEntity(
     page = page,
     cachedAt = System.currentTimeMillis(),
 )
+
+fun PopularMovieEntity.toDomain() = Movie(
+    id = id,
+    title = title,
+    overview = overview,
+    posterUrl = posterUrl,
+    backdropUrl = backdropUrl,
+    releaseDate = releaseDate,
+    voteAverage = voteAverage,
+    voteCount = voteCount,
+)
