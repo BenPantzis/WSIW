@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -36,9 +38,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -58,6 +62,10 @@ import com.bsp.wsiw.feature.detail.navigation.personDestination
 import com.bsp.wsiw.feature.detail.navigation.reviewsDestination
 import com.bsp.wsiw.feature.home.navigation.HomeKey
 import com.bsp.wsiw.feature.home.navigation.homeDestination
+import com.bsp.wsiw.feature.profile.navigation.LoginCallbackKey
+import com.bsp.wsiw.feature.profile.navigation.ProfileKey
+import com.bsp.wsiw.feature.profile.navigation.loginCallbackDestination
+import com.bsp.wsiw.feature.profile.navigation.profileDestination
 import com.bsp.wsiw.feature.search.navigation.SearchKey
 import com.bsp.wsiw.feature.search.navigation.searchDestination
 import com.bsp.wsiw.feature.watchlist.navigation.WatchlistKey
@@ -66,6 +74,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val pendingAuthToken = mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -83,8 +93,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WSIWTheme {
-                WsiwApp()
+                WsiwApp(
+                    pendingAuthToken = pendingAuthToken.value,
+                    onAuthTokenConsumed = { pendingAuthToken.value = null },
+                )
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val uri = intent.data ?: return
+        if (uri.scheme == "wsiw" && uri.host == "auth") {
+            pendingAuthToken.value = uri.getQueryParameter("request_token")
         }
     }
 
@@ -110,7 +131,6 @@ class MainActivity : ComponentActivity() {
         decor.addView(topBar)
         decor.addView(bottomBar)
 
-        // iconView throws NPE when the system splash has no icon layer — handle gracefully
         val iconView = runCatching { provider.iconView }.getOrNull()
 
         val animators = buildList {
@@ -158,16 +178,26 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun WsiwApp() {
+private fun WsiwApp(
+    pendingAuthToken: String?,
+    onAuthTokenConsumed: () -> Unit,
+) {
     val backStack = remember { mutableStateListOf<NavKey>(HomeKey) }
 
     val currentKey by remember { derivedStateOf { backStack.lastOrNull() } }
     val showBottomBar by remember {
         derivedStateOf {
-            currentKey.let { it is HomeKey || it is SearchKey || it is WatchlistKey }
+            currentKey.let {
+                it is HomeKey || it is SearchKey || it is WatchlistKey || it is ProfileKey
+            }
         }
     }
 
+    LaunchedEffect(pendingAuthToken) {
+        val token = pendingAuthToken ?: return@LaunchedEffect
+        backStack.add(LoginCallbackKey(token))
+        onAuthTokenConsumed()
+    }
 
     fun navigateToTab(key: NavKey) {
         if (currentKey?.let { it::class == key::class } == true) return
@@ -237,6 +267,14 @@ private fun WsiwApp() {
                     onMovieClick = ::navigateToDetail,
                     onBrowseMovies = { navigateToTab(HomeKey) },
                 )
+                profileDestination()
+                loginCallbackDestination(
+                    onSuccess = {
+                        backStack.removeLastOrNull()
+                        navigateToTab(ProfileKey)
+                    },
+                    onBack = { backStack.removeLastOrNull() },
+                )
                 detailDestination(
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
@@ -264,6 +302,7 @@ private enum class Tab(
     Discover(HomeKey, "Discover", Icons.Default.Home),
     Search(SearchKey, "Search", Icons.Default.Search),
     Watchlist(WatchlistKey, "Watchlist", Icons.Default.Favorite),
+    Profile(ProfileKey, "Profile", Icons.Default.Person),
 }
 
 @Composable

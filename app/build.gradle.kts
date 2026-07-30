@@ -54,12 +54,13 @@ dependencies {
     implementation(project(":core:core-ui"))
     implementation(project(":core:core-common"))
     implementation(project(":core:core-network"))
-    implementation(project(":core:core-data"))
+    implementation(project(":layer:layer-data"))
     implementation(project(":core:core-datastore"))
     implementation(project(":feature:feature-home"))
     implementation(project(":feature:feature-detail"))
     implementation(project(":feature:feature-search"))
     implementation(project(":feature:feature-watchlist"))
+    implementation(project(":feature:feature-profile"))
 
     implementation(catalog.findLibrary("androidx-navigation3-ui").get())
 

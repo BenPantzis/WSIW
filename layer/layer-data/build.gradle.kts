@@ -8,12 +8,16 @@ plugins {
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
-    namespace = "com.bsp.wsiw.core.datastore"
+    namespace = "com.bsp.wsiw.core.data"
 }
 
 dependencies {
     implementation(project(":core:core-common"))
     implementation(project(":layer:layer-domain"))
-    api(catalog.findLibrary("datastore-preferences").get())
+    implementation(project(":core:core-network"))
+    implementation(project(":core:core-database"))
     implementation(catalog.findLibrary("coroutines-android").get())
+    implementation(catalog.findLibrary("retrofit-core").get())
+    implementation(catalog.findLibrary("retrofit-gson").get())
+    implementation(catalog.findLibrary("timber").get())
 }

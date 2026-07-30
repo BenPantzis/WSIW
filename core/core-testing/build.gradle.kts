@@ -18,7 +18,7 @@ android {
 
 dependencies {
     api(project(":core:core-common"))
-    api(project(":core:core-domain"))
+    api(project(":layer:layer-domain"))
     api(catalog.findLibrary("coroutines-test").get())
     api(catalog.findLibrary("junit").get())
     api(catalog.findLibrary("mockk").get())

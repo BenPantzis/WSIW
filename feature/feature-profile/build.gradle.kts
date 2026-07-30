@@ -10,23 +10,23 @@ plugins {
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
-    namespace = "com.bsp.wsiw.feature.search"
+    namespace = "com.bsp.wsiw.feature.profile"
 }
 
 dependencies {
     implementation(project(":core:core-ui"))
     implementation(project(":core:core-common"))
     implementation(project(":layer:layer-domain"))
+    implementation(project(":layer:layer-data"))
+    implementation(project(":core:core-datastore"))
 
     implementation(catalog.findLibrary("androidx-lifecycle-viewmodel").get())
     implementation(catalog.findLibrary("androidx-lifecycle-runtime-compose").get())
     implementation(catalog.findLibrary("androidx-navigation3-runtime").get())
     implementation(catalog.findLibrary("hilt-navigation-compose").get())
     implementation(catalog.findLibrary("kotlinx-serialization-core").get())
-    implementation(catalog.findLibrary("coroutines-android").get())
+    implementation(catalog.findLibrary("coil-compose").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-core")
-
-    testImplementation(project(":core:core-testing"))
+    implementation("androidx.compose.material:material-icons-extended")
 }

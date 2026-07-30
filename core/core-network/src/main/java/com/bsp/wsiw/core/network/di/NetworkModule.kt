@@ -42,4 +42,22 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+    @Provides
+    @Singleton
+    @AuthBaseUrl
+    fun provideAuthBaseUrl(): String = "https://api.themoviedb.org/"
+
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthRetrofit(
+        @AuthBaseUrl baseUrl: String,
+        okHttpClient: OkHttpClient,
+    ): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 }

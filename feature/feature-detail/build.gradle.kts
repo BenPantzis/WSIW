@@ -16,7 +16,7 @@ android {
 dependencies {
     implementation(project(":core:core-ui"))
     implementation(project(":core:core-common"))
-    implementation(project(":core:core-domain"))
+    implementation(project(":layer:layer-domain"))
 
     implementation(catalog.findLibrary("androidx-lifecycle-viewmodel").get())
     implementation(catalog.findLibrary("androidx-lifecycle-runtime-compose").get())

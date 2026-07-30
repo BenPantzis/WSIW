@@ -1,23 +1,30 @@
-﻿package com.bsp.wsiw.core.datastore.auth
+package com.bsp.wsiw.core.datastore.auth
 
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.bsp.wsiw.core.common.auth.TokenProvider
 import com.bsp.wsiw.core.datastore.PreferencesRepository
+import com.bsp.wsiw.core.datastore.di.StaticToken
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DataStoreTokenProvider @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
+    @StaticToken private val staticToken: String,
 ) : TokenProvider {
 
     companion object {
-        private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
+        val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
     }
 
-    override suspend fun getAccessToken(): String? =
+    override suspend fun getAccessToken(): String =
         preferencesRepository.preferences.map { it[ACCESS_TOKEN_KEY] }.firstOrNull()
+            ?: staticToken
+
+    override suspend fun saveAccessToken(token: String) {
+        preferencesRepository.put(ACCESS_TOKEN_KEY, token)
+    }
 
     fun getRefreshToken() =
         preferencesRepository.preferences.map { it[REFRESH_TOKEN_KEY] }
