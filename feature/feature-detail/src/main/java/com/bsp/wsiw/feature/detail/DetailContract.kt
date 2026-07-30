@@ -10,7 +10,7 @@ sealed interface DetailAction {
     data object ToggleWatchlist : DetailAction
     data object ShowRatingDialog : DetailAction
     data object DismissRatingDialog : DetailAction
-    data class RateMovie(val stars: Int) : DetailAction
+    data class RateMovie(val rating: Float) : DetailAction
     data object RemoveRating : DetailAction
 }
 

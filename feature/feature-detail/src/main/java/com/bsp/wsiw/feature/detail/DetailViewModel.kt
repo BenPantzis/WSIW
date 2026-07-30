@@ -105,9 +105,8 @@ class DetailViewModel @AssistedInject constructor(
             }
             DetailAction.DismissRatingDialog -> updateState { copy(showRatingDialog = false) }
             is DetailAction.RateMovie -> {
-                val rating = action.stars * 2f
                 updateState { copy(showRatingDialog = false) }
-                viewModelScope.launch { rateMovie(movieId, rating) }
+                viewModelScope.launch { rateMovie(movieId, action.rating) }
             }
             DetailAction.RemoveRating -> {
                 updateState { copy(showRatingDialog = false) }

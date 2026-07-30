@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,7 +55,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -169,7 +175,7 @@ internal fun DetailContent(
             showRatingDialog = uiState.showRatingDialog,
             onShowRatingDialog = { onAction(DetailAction.ShowRatingDialog) },
             onDismissRatingDialog = { onAction(DetailAction.DismissRatingDialog) },
-            onRateMovie = { stars -> onAction(DetailAction.RateMovie(stars)) },
+            onRateMovie = { rating -> onAction(DetailAction.RateMovie(rating)) },
             onRemoveRating = { onAction(DetailAction.RemoveRating) },
         )
     }
@@ -197,7 +203,7 @@ private fun CollapsingDetailContent(
     showRatingDialog: Boolean = false,
     onShowRatingDialog: () -> Unit = {},
     onDismissRatingDialog: () -> Unit = {},
-    onRateMovie: (Int) -> Unit = {},
+    onRateMovie: (Float) -> Unit = {},
     onRemoveRating: () -> Unit = {},
 ) {
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
@@ -269,6 +275,9 @@ private fun CollapsingDetailContent(
                 RatingBottomSheet(
                     currentRating = userRating,
                     accentColor = accentColor,
+                    posterUrl = movie.posterUrl,
+                    title = movie.title,
+                    year = movie.releaseDate.take(4),
                     onRate = onRateMovie,
                     onRemove = onRemoveRating,
                 )
@@ -975,24 +984,30 @@ private fun RatingRow(
     modifier: Modifier = Modifier,
 ) {
     val accent = LocalAccentColor.current
+    val isRated = userRating != null
     val starsFilled = userRating?.let { (it / 2f).roundToInt().coerceIn(1, 5) } ?: 0
+    val chipBackground = if (isRated) accent.copy(alpha = 0.12f) else Color.Transparent
+    val chipBorder = if (isRated) accent.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+    val labelColor = if (isRated) accent else MaterialTheme.colorScheme.onSurfaceVariant
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
             .clickable(onClick = onClick)
-            .padding(vertical = 4.dp),
+            .border(1.dp, chipBorder, RoundedCornerShape(20.dp))
+            .background(chipBackground, RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 7.dp),
     ) {
         Text(
-            text = if (userRating != null) "Your rating" else "Rate this film",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(94.dp),
+            text = if (isRated) "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled) else "★",
+            style = MaterialTheme.typography.labelLarge,
+            color = if (isRated) accent else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
-        Spacer(Modifier.width(AppTheme.spacing.sm))
         Text(
-            text = "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled),
-            style = MaterialTheme.typography.titleSmall,
-            color = if (starsFilled > 0) accent else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            text = if (isRated) "${userRating!!.let { if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString() }} / 10" else "Rate this film",
+            style = MaterialTheme.typography.labelMedium,
+            color = labelColor,
         )
     }
 }
@@ -1001,41 +1016,140 @@ private fun RatingRow(
 private fun RatingBottomSheet(
     currentRating: Float?,
     accentColor: Color,
-    onRate: (Int) -> Unit,
+    posterUrl: String?,
+    title: String,
+    year: String,
+    onRate: (Float) -> Unit,
     onRemove: () -> Unit,
 ) {
-    val starsFilled = currentRating?.let { (it / 2f).roundToInt().coerceIn(1, 5) } ?: 0
+    val haptic = LocalHapticFeedback.current
+
+    // Tracks the live selection while the user is tapping (before confirm)
+    var liveRating by remember(currentRating) { mutableStateOf(currentRating) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 8.dp, bottom = 32.dp)
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            text = "Rate this film",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (i in 1..5) {
-                Text(
-                    text = if (i <= starsFilled) "★" else "☆",
-                    style = MaterialTheme.typography.displaySmall,
-                    color = if (i <= starsFilled) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.clickable { onRate(i) },
+        // Movie context header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (posterUrl != null) {
+                RemoteImage(
+                    url = posterUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(48.dp)
+                        .aspectRatio(2f / 3f)
+                        .clip(MaterialTheme.shapes.small),
                 )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+                if (year.length == 4) {
+                    Text(
+                        text = year,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 
+        // Divider
+        androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        Spacer(Modifier.height(24.dp))
+
+        // Stars — each split into left (half-star) and right (full-star) tap zones
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val starsFloat = (liveRating ?: 0f) / 2f
+            for (i in 1..5) {
+                val isFullFilled = starsFloat >= i
+                val isHalfFilled = !isFullFilled && starsFloat >= i - 0.5f
+
+                Box(modifier = Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "★",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = when {
+                            isFullFilled -> accentColor
+                            isHalfFilled -> accentColor.copy(alpha = 0.5f)
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        },
+                    )
+                    // Left half → half-star
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.5f)
+                            .align(Alignment.CenterStart)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                val newRating = (i * 2 - 1).toFloat()
+                                liveRating = newRating
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onRate(newRating)
+                            },
+                    )
+                    // Right half → full star
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.5f)
+                            .align(Alignment.CenterEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                val newRating = (i * 2).toFloat()
+                                liveRating = newRating
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onRate(newRating)
+                            },
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Live numeric display
+        val displayText = liveRating?.let {
+            val formatted = if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString()
+            "$formatted / 10"
+        } ?: "Tap a star to rate"
+        Text(
+            text = displayText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (liveRating != null) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        )
+
         if (currentRating != null) {
+            Spacer(Modifier.height(8.dp))
             TextButton(onClick = onRemove) {
                 Text(
-                    text = "Remove rating",
+                    text = "Clear rating",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelLarge,
                 )
