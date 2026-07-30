@@ -204,7 +204,6 @@ private fun CollapsingDetailContent(
                 scrollFraction = scrollFraction,
                 backdropHeightPx = backdropHeightPx,
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
                 onClick = onToggleWatchlist,
@@ -213,6 +212,7 @@ private fun CollapsingDetailContent(
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
                     .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = 16.dp),
             )
+            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount)
             TopBar(
                 title = movie.title,
                 scrollFraction = scrollFraction,
