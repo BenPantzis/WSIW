@@ -17,6 +17,7 @@ sealed interface DetailAction {
 sealed interface DetailEvent {
     data class ShowError(val message: UiText) : DetailEvent
     data object SignInRequired : DetailEvent
+    data class RatingSubmitted(val rating: Float) : DetailEvent
 }
 
 data class DetailUiState(

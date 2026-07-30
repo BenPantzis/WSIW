@@ -54,7 +54,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -118,12 +130,14 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    var submittedRating by remember { mutableStateOf<Float?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message.resolve(context))
                 DetailEvent.SignInRequired -> snackbarHostState.showSnackbar("Sign in to save movies to your watchlist")
+                is DetailEvent.RatingSubmitted -> submittedRating = event.rating
             }
         }
     }
@@ -136,6 +150,8 @@ fun DetailScreen(
         onPersonClick = onPersonClick,
         onReviewsClick = onReviewsClick,
         snackbarHostState = snackbarHostState,
+        submittedRating = submittedRating,
+        onFeedbackFinished = { submittedRating = null },
     )
 }
 
@@ -148,6 +164,8 @@ internal fun DetailContent(
     onPersonClick: (Int) -> Unit = {},
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit = { _, _ -> },
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    submittedRating: Float? = null,
+    onFeedbackFinished: () -> Unit = {},
 ) {
     when {
         uiState.isLoading -> DetailLoadingContent(onBack = onBack)
@@ -183,6 +201,8 @@ internal fun DetailContent(
             onDismissRatingDialog = { onAction(DetailAction.DismissRatingDialog) },
             onRateMovie = { rating -> onAction(DetailAction.RateMovie(rating)) },
             onRemoveRating = { onAction(DetailAction.RemoveRating) },
+            submittedRating = submittedRating,
+            onFeedbackFinished = onFeedbackFinished,
         )
     }
 }
@@ -211,7 +231,10 @@ private fun CollapsingDetailContent(
     onDismissRatingDialog: () -> Unit = {},
     onRateMovie: (Float) -> Unit = {},
     onRemoveRating: () -> Unit = {},
+    submittedRating: Float? = null,
+    onFeedbackFinished: () -> Unit = {},
 ) {
+    var chipCenterPx by remember { mutableStateOf(Offset.Zero) }
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
 
@@ -259,7 +282,15 @@ private fun CollapsingDetailContent(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
+                onRatingRowPositioned = { chipCenterPx = it },
             )
+            if (submittedRating != null && chipCenterPx != Offset.Zero) {
+                FloatingRatingFeedback(
+                    rating = submittedRating!!,
+                    chipCenter = chipCenterPx,
+                    onFinished = onFeedbackFinished,
+                )
+            }
             TopBar(
                 title = movie.title,
                 scrollFraction = scrollFraction,
@@ -353,6 +384,7 @@ private fun ContentList(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
+    onRatingRowPositioned: (Offset) -> Unit = {},
 ) {
     LazyColumn(
         state = listState,
@@ -372,6 +404,7 @@ private fun ContentList(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
+                onRatingRowPositioned = onRatingRowPositioned,
             )
         }
     }
@@ -470,6 +503,7 @@ private fun MovieDetailCard(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
+    onRatingRowPositioned: (Offset) -> Unit = {},
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -507,7 +541,7 @@ private fun MovieDetailCard(
                 }
 
                 Spacer(Modifier.height(spacing.lg))
-                RatingRow(userRating = userRating, onClick = onShowRatingDialog)
+                RatingRow(userRating = userRating, onClick = onShowRatingDialog, onPositioned = onRatingRowPositioned)
 
                 Spacer(Modifier.height(spacing.xl))
                 SectionHeader(stringResource(R.string.detail_section_overview))
@@ -988,6 +1022,7 @@ private fun RatingRow(
     userRating: Float?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onPositioned: (Offset) -> Unit = {},
 ) {
     val accent = LocalAccentColor.current
     val isRated = userRating != null
@@ -1000,6 +1035,11 @@ private fun RatingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
+            .onGloballyPositioned { coords ->
+                val topLeft = coords.localToRoot(Offset.Zero)
+                val sz = coords.size
+                onPositioned(Offset(topLeft.x + sz.width / 2f, topLeft.y + sz.height / 2f))
+            }
             .clickable(onClick = onClick)
             .border(1.dp, chipBorder, RoundedCornerShape(20.dp))
             .background(chipBackground, RoundedCornerShape(20.dp))
@@ -1168,6 +1208,92 @@ private fun RatingBottomSheet(
             Spacer(Modifier.height(8.dp))
         }
     }
+}
+
+// --- Emoji rating feedback ---
+
+@Composable
+private fun FloatingRatingFeedback(
+    rating: Float,
+    chipCenter: Offset,
+    onFinished: () -> Unit,
+) {
+    val accent = LocalAccentColor.current
+    val density = LocalDensity.current
+    val emoji = emojiForRating(rating)
+
+    val scale = remember { Animatable(0f) }
+    val travelY = remember { Animatable(0f) }
+    val emojiAlpha = remember { Animatable(1f) }
+    val particleRadius = remember { Animatable(0f) }
+    val particleAlpha = remember { Animatable(1f) }
+
+    LaunchedEffect(Unit) {
+        val travelPx = with(density) { 96.dp.toPx() }
+        val particlePx = with(density) { 38.dp.toPx() }
+        launch { scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 350f)) }
+        launch { travelY.animateTo(-travelPx, tween(860, easing = FastOutSlowInEasing)) }
+        launch {
+            delay(300)
+            emojiAlpha.animateTo(0f, tween(560))
+            onFinished()
+        }
+        launch { particleRadius.animateTo(particlePx, tween(420, easing = FastOutSlowInEasing)) }
+        launch {
+            delay(70)
+            particleAlpha.animateTo(0f, tween(380))
+        }
+    }
+
+    val dotRadiusPx = with(density) { 4.dp.toPx() }
+    val emojiHalfPx = with(density) { 20.dp.toPx() }
+
+    // Particle ring — drawn during the draw phase so no recomposition on value change
+    Canvas(Modifier.fillMaxSize()) {
+        val pa = particleAlpha.value
+        val pr = particleRadius.value
+        if (pa > 0f) {
+            val color = accent.copy(alpha = pa * 0.8f)
+            repeat(8) { i ->
+                val angle = Math.toRadians(i * 45.0)
+                drawCircle(
+                    color = color,
+                    radius = dotRadiusPx,
+                    center = Offset(
+                        chipCenter.x + (pr * cos(angle)).toFloat(),
+                        chipCenter.y + (pr * sin(angle)).toFloat(),
+                    ),
+                )
+            }
+        }
+    }
+
+    // Emoji — starts at chip center, scales in with spring, floats upward, fades out
+    Text(
+        text = emoji,
+        style = MaterialTheme.typography.displaySmall,
+        modifier = Modifier
+            .absoluteOffset {
+                IntOffset(
+                    x = (chipCenter.x - emojiHalfPx).roundToInt(),
+                    y = (chipCenter.y - emojiHalfPx).roundToInt(),
+                )
+            }
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+                translationY = travelY.value
+                alpha = emojiAlpha.value
+            },
+    )
+}
+
+private fun emojiForRating(rating: Float): String = when {
+    rating <= 2f -> "😤"
+    rating <= 4f -> "😕"
+    rating <= 6f -> "😐"
+    rating <= 8f -> "😊"
+    else -> "🤩"
 }
 
 // --- Helpers ---
