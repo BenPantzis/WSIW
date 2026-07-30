@@ -105,6 +105,7 @@ fun DetailScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message.resolve(context))
+                DetailEvent.SignInRequired -> snackbarHostState.showSnackbar("Sign in to save movies to your watchlist")
             }
         }
     }

@@ -12,6 +12,7 @@ sealed interface DetailAction {
 
 sealed interface DetailEvent {
     data class ShowError(val message: UiText) : DetailEvent
+    data object SignInRequired : DetailEvent
 }
 
 data class DetailUiState(
@@ -20,6 +21,7 @@ data class DetailUiState(
     val error: UiText? = null,
     val accentArgb: Int? = null,
     val isWatchlisted: Boolean = false,
+    val isAuthenticated: Boolean = false,
     val isRefreshing: Boolean = false,
     val previewReviews: List<Review> = emptyList(),
     val totalReviewCount: Int = 0,

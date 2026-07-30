@@ -19,6 +19,12 @@ interface WatchlistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(entity: WatchlistEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(entities: List<WatchlistEntity>)
+
     @Query("DELETE FROM watchlist WHERE id = :movieId")
     fun deleteById(movieId: Int): Int
+
+    @Query("DELETE FROM watchlist")
+    fun deleteAll()
 }

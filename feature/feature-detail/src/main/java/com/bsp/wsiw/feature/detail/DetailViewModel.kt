@@ -10,6 +10,7 @@ import coil.request.SuccessResult
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
@@ -33,6 +34,7 @@ class DetailViewModel @AssistedInject constructor(
     private val isWatchlisted: IsWatchlistedUseCase,
     private val toggleWatchlist: ToggleWatchlistUseCase,
     private val movieRepository: MovieRepository,
+    private val sessionRepository: SessionRepository,
     @param:ApplicationContext private val context: Context,
 ) : BaseViewModel<DetailAction, DetailEvent, DetailUiState>(
     initialState = DetailUiState(),
@@ -53,12 +55,21 @@ class DetailViewModel @AssistedInject constructor(
                 updateState { copy(isWatchlisted = watchlisted) }
             }
         }
+        viewModelScope.launch {
+            sessionRepository.isAuthenticated.collect { authenticated ->
+                updateState { copy(isAuthenticated = authenticated) }
+            }
+        }
     }
 
     override fun handleAction(action: DetailAction) {
         when (action) {
             DetailAction.Retry -> loadDetail()
             DetailAction.ToggleWatchlist -> {
+                if (!uiState.value.isAuthenticated) {
+                    viewModelScope.launch { sendEvent(DetailEvent.SignInRequired) }
+                    return
+                }
                 val detail = uiState.value.movie ?: return
                 viewModelScope.launch {
                     toggleWatchlist(

@@ -7,5 +7,7 @@ interface WatchlistRepository {
     fun getWatchlist(): Flow<List<Movie>>
     fun isWatchlisted(movieId: Int): Flow<Boolean>
     suspend fun addToWatchlist(movie: Movie)
-    suspend fun removeFromWatchlist(movieId: Int): Int
+    suspend fun removeFromWatchlist(movieId: Int)
+    suspend fun refreshWatchlist()
+    suspend fun clearAll()
 }

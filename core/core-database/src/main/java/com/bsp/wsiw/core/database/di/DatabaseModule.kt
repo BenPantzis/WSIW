@@ -6,9 +6,6 @@ import com.bsp.wsiw.core.database.AppDatabase
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
 import com.bsp.wsiw.core.database.dao.WatchlistDao
-import com.bsp.wsiw.core.database.watchlist.WatchlistRepositoryImpl
-import com.bsp.wsiw.core.domain.repository.WatchlistRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,32 +15,25 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DatabaseModule {
+object DatabaseModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindWatchlistRepository(impl: WatchlistRepositoryImpl): WatchlistRepository
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "app_database",
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
+            .build()
 
-    companion object {
+    @Provides
+    fun provideWatchlistDao(db: AppDatabase): WatchlistDao = db.watchlistDao()
 
-        @Provides
-        @Singleton
-        fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
-            Room.databaseBuilder(
-                context,
-                AppDatabase::class.java,
-                "app_database",
-            )
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
-                .build()
+    @Provides
+    fun providePopularMovieCacheDao(db: AppDatabase): PopularMovieCacheDao = db.popularMovieCacheDao()
 
-        @Provides
-        fun provideWatchlistDao(db: AppDatabase): WatchlistDao = db.watchlistDao()
-
-        @Provides
-        fun providePopularMovieCacheDao(db: AppDatabase): PopularMovieCacheDao = db.popularMovieCacheDao()
-
-        @Provides
-        fun provideMovieDetailCacheDao(db: AppDatabase): MovieDetailCacheDao = db.movieDetailCacheDao()
-    }
+    @Provides
+    fun provideMovieDetailCacheDao(db: AppDatabase): MovieDetailCacheDao = db.movieDetailCacheDao()
 }
