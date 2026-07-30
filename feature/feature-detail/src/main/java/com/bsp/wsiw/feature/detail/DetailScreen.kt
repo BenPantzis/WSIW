@@ -35,6 +35,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -1106,10 +1108,8 @@ private fun RatingBottomSheet(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
                             ) {
-                                val newRating = (i * 2 - 1).toFloat()
-                                liveRating = newRating
+                                liveRating = (i * 2 - 1).toFloat()
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                onRate(newRating)
                             },
                     )
                     // Right half → full star
@@ -1122,10 +1122,8 @@ private fun RatingBottomSheet(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
                             ) {
-                                val newRating = (i * 2).toFloat()
-                                liveRating = newRating
+                                liveRating = (i * 2).toFloat()
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                onRate(newRating)
                             },
                     )
                 }
@@ -1145,8 +1143,24 @@ private fun RatingBottomSheet(
             color = if (liveRating != null) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
         )
 
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = { liveRating?.let(onRate) },
+            enabled = liveRating != null,
+            colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+        ) {
+            Text(
+                text = "Rate",
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.Black.copy(alpha = 0.85f),
+            )
+        }
+
         if (currentRating != null) {
-            Spacer(Modifier.height(8.dp))
             TextButton(onClick = onRemove) {
                 Text(
                     text = "Clear rating",
@@ -1154,6 +1168,8 @@ private fun RatingBottomSheet(
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+        } else {
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
