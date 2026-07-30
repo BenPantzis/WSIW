@@ -5,7 +5,11 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -1078,17 +1082,36 @@ private fun RatingBottomSheet(
 
         Spacer(Modifier.height(24.dp))
 
-        // Stars — each split into left (half-star) and right (full-star) tap zones
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        // Stars — unified drag surface; finger position maps to rating
+        var starRowWidthPx by remember { mutableStateOf(0f) }
+
+        Box(
+            modifier = Modifier
+                .onSizeChanged { starRowWidthPx = it.width.toFloat() }
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val newRating = ratingFromX(down.position.x, starRowWidthPx)
+                        if (newRating != liveRating) {
+                            liveRating = newRating
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        }
+                        drag(down.id) { change ->
+                            change.consume()
+                            val dragged = ratingFromX(change.position.x, starRowWidthPx)
+                            if (dragged != liveRating) {
+                                liveRating = dragged
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            }
+                        }
+                    }
+                },
         ) {
             val starsFloat = (liveRating ?: 0f) / 2f
-            for (i in 1..5) {
-                val isFullFilled = starsFloat >= i
-                val isHalfFilled = !isFullFilled && starsFloat >= i - 0.5f
-
-                Box(modifier = Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                for (i in 1..5) {
+                    val isFullFilled = starsFloat >= i
+                    val isHalfFilled = !isFullFilled && starsFloat >= i - 0.5f
                     Text(
                         text = "★",
                         style = MaterialTheme.typography.displaySmall,
@@ -1097,34 +1120,7 @@ private fun RatingBottomSheet(
                             isHalfFilled -> accentColor.copy(alpha = 0.5f)
                             else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                         },
-                    )
-                    // Left half → half-star
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f)
-                            .align(Alignment.CenterStart)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) {
-                                liveRating = (i * 2 - 1).toFloat()
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            },
-                    )
-                    // Right half → full star
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f)
-                            .align(Alignment.CenterEnd)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) {
-                                liveRating = (i * 2).toFloat()
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            },
+                        modifier = Modifier.size(44.dp),
                     )
                 }
             }
@@ -1175,6 +1171,14 @@ private fun RatingBottomSheet(
 }
 
 // --- Helpers ---
+
+/** Maps a finger X position (pixels) across the star row to a TMDB rating in 0.5 steps (0.5–10). */
+private fun ratingFromX(x: Float, width: Float): Float {
+    if (width <= 0f) return 0.5f
+    val fraction = (x / width).coerceIn(0f, 1f)
+    val raw = fraction * 10f
+    return (kotlin.math.round(raw * 2) / 2f).coerceIn(0.5f, 10f)
+}
 
 private fun formatReleaseDate(raw: String): String = formatTmdbDate(raw)
 
