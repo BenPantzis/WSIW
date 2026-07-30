@@ -1080,7 +1080,20 @@ private fun RatingBottomSheet(
         // Divider
         androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
+
+        // Live numeric display — above the stars so it's visible while dragging
+        val displayText = liveRating?.let {
+            val formatted = if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString()
+            "$formatted / 10"
+        } ?: "Drag or tap to rate"
+        Text(
+            text = displayText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (liveRating != null) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        )
+
+        Spacer(Modifier.height(12.dp))
 
         // Stars — unified drag surface; finger position maps to rating
         var starRowWidthPx by remember { mutableStateOf(0f) }
@@ -1125,19 +1138,6 @@ private fun RatingBottomSheet(
                 }
             }
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        // Live numeric display
-        val displayText = liveRating?.let {
-            val formatted = if (it == it.toLong().toFloat()) it.toInt().toString() else it.toString()
-            "$formatted / 10"
-        } ?: "Tap a star to rate"
-        Text(
-            text = displayText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (liveRating != null) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-        )
 
         Spacer(Modifier.height(20.dp))
 
