@@ -13,7 +13,6 @@ android {
 
 dependencies {
     implementation(project(":core:core-common"))
-    implementation(project(":layer:layer-domain"))
     api(catalog.findLibrary("datastore-preferences").get())
     implementation(catalog.findLibrary("coroutines-android").get())
 }

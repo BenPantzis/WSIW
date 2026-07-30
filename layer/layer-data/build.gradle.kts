@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":layer:layer-domain"))
     implementation(project(":core:core-network"))
     implementation(project(":core:core-database"))
+    implementation(project(":core:core-datastore"))
     implementation(catalog.findLibrary("coroutines-android").get())
     implementation(catalog.findLibrary("retrofit-core").get())
     implementation(catalog.findLibrary("retrofit-gson").get())

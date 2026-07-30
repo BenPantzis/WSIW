@@ -1,4 +1,4 @@
-package com.bsp.wsiw.core.datastore.auth
+package com.bsp.wsiw.core.data.auth
 
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.bsp.wsiw.core.datastore.PreferencesRepository
