@@ -69,6 +69,7 @@ import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.model.VideoEntry
 import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
@@ -352,7 +353,7 @@ private fun BookmarkButton(
             Icon(
                 imageVector = Icons.Default.Favorite,
                 contentDescription = if (isWatchlisted) stringResource(R.string.detail_cd_remove_from_watchlist) else stringResource(R.string.detail_cd_add_to_watchlist),
-                tint = if (isWatchlisted) Color(0xFFE8A020) else Color.White.copy(alpha = 0.5f),
+                tint = if (isWatchlisted) LocalAccentColor.current else Color.White.copy(alpha = 0.5f),
                 modifier = Modifier.size(22.dp),
             )
         }
@@ -400,7 +401,7 @@ private fun MovieDetailCard(
                 .fillMaxWidth()
                 .padding(top = spacing.xl, bottom = 48.dp),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Column(modifier = Modifier.padding(horizontal = spacing.content)) {
                 StatsRow(movie = movie)
                 Spacer(Modifier.height(spacing.lg))
 
@@ -452,21 +453,21 @@ private fun MovieDetailCard(
             // Trailer
             if (movie.trailer != null) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader(stringResource(R.string.detail_section_trailer), modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_trailer), modifier = Modifier.padding(horizontal = spacing.content))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 TrailerButton(
                     trailer = movie.trailer!!,
-                    modifier = Modifier.padding(horizontal = 20.dp),
+                    modifier = Modifier.padding(horizontal = spacing.content),
                 )
             }
 
             // Cast
             if (movie.cast.isNotEmpty()) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader(stringResource(R.string.detail_section_cast), modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_cast), modifier = Modifier.padding(horizontal = spacing.content))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 LazyRow(
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = spacing.content),
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.md),
                 ) {
                     items(movie.cast) { member -> CastCard(member, onClick = { onPersonClick(member.id) }) }
@@ -476,14 +477,18 @@ private fun MovieDetailCard(
             // Similar movies
             if (movie.similarMovies.isNotEmpty()) {
                 Spacer(Modifier.height(AppTheme.spacing.xl))
-                SectionHeader(stringResource(R.string.detail_section_more_like_this), modifier = Modifier.padding(horizontal = 20.dp))
+                SectionHeader(stringResource(R.string.detail_section_more_like_this), modifier = Modifier.padding(horizontal = spacing.content))
                 Spacer(Modifier.height(AppTheme.spacing.sm))
                 LazyRow(
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = spacing.content),
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
                 ) {
                     items(movie.similarMovies) { similar ->
-                        SimilarMovieCard(movie = similar, onClick = { onMovieClick(similar.id) })
+                        MovieThumbnailCard(
+                            posterUrl = similar.posterUrl,
+                            title = similar.title,
+                            onClick = { onMovieClick(similar.id) },
+                        )
                     }
                 }
             }
@@ -545,30 +550,11 @@ private fun CastCard(member: CastMember, onClick: () -> Unit) {
             .width(80.dp)
             .clickable(onClick = onClick),
     ) {
-        if (member.profileUrl != null) {
-            RemoteImage(
-                url = member.profileUrl,
-                contentDescription = member.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape),
-            )
-        } else {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-            ) {
-                Text(
-                    text = member.name.firstOrNull()?.toString() ?: "?",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        AvatarImage(
+            url = member.profileUrl,
+            name = member.name,
+            size = 56.dp,
+        )
         Spacer(Modifier.height(6.dp))
         Text(
             text = member.name,
@@ -592,45 +578,6 @@ private fun CastCard(member: CastMember, onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun SimilarMovieCard(movie: Movie, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .width(110.dp)
-            .aspectRatio(2f / 3f)
-            .clip(MaterialTheme.shapes.small)
-            .clickable(onClick = onClick),
-    ) {
-        RemoteImage(
-            url = movie.posterUrl,
-            contentDescription = movie.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.5f to Color.Transparent,
-                            1.0f to Color(0xCC0D0D0D),
-                        ),
-                    ),
-                ),
-        )
-        Text(
-            text = movie.title,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(6.dp),
-        )
-    }
-}
 
 @Composable
 private fun StatsRow(movie: MovieDetail) {
@@ -742,7 +689,7 @@ private fun DetailLoadingContent(onBack: () -> Unit) {
         Column(
             modifier = Modifier
                 .padding(top = BackdropHeight - ContentOverlap)
-                .padding(horizontal = 20.dp, vertical = AppTheme.spacing.xl),
+                .padding(horizontal = AppTheme.spacing.content, vertical = AppTheme.spacing.xl),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Box(modifier = Modifier.width(120.dp).height(16.dp).shimmerEffect())
@@ -805,7 +752,7 @@ private fun InlineReviewsSection(
     val accent = LocalAccentColor.current
     val countLabel = if (totalCount > 0) " ($totalCount)" else ""
 
-    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+    Column(modifier = Modifier.padding(horizontal = spacing.content)) {
         SectionHeader("Reviews$countLabel")
         Spacer(Modifier.height(spacing.md))
         reviews.forEach { review ->
@@ -858,7 +805,7 @@ private fun InlineReviewCard(review: Review) {
             }
             if (review.rating != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "★", color = GoldDefault, style = MaterialTheme.typography.labelMedium)
+                    Text(text = "★", color = LocalAccentColor.current, style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.width(2.dp))
                     Text(
                         text = "${review.rating}/10",

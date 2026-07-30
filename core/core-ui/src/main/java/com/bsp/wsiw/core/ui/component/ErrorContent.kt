@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.bsp.wsiw.core.ui.R
+import com.bsp.wsiw.core.ui.theme.AppTheme
 
 @Composable
 fun ErrorContent(
@@ -28,7 +28,7 @@ fun ErrorContent(
     ) {
         Text(text = message, style = MaterialTheme.typography.bodyLarge)
         if (onRetry != null) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(AppTheme.spacing.lg))
             Button(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
         }
     }

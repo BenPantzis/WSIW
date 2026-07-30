@@ -3,12 +3,10 @@ package com.bsp.wsiw.feature.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,8 +17,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -35,25 +31,20 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
-import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
-import com.bsp.wsiw.core.ui.component.RemoteImage
+import com.bsp.wsiw.core.ui.component.MoviePosterCard
 import com.bsp.wsiw.core.ui.component.ScreenScaffold
-import com.bsp.wsiw.core.ui.component.shimmerEffect
+import com.bsp.wsiw.core.ui.component.ShimmerPosterCard
 import com.bsp.wsiw.core.ui.theme.AppTheme
-import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(
@@ -134,7 +125,7 @@ internal fun HomeContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.TopCenter),
-                            color = Color(0xFFE8A020),
+                            color = MaterialTheme.colorScheme.primary,
                             trackColor = Color.Transparent,
                         )
                     }
@@ -152,9 +143,10 @@ private fun CategoryChipRow(
     onSelect: (HomeCategory) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = AppTheme.spacing
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = spacing.lg, vertical = spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = modifier,
     ) {
         items(HomeCategory.entries) { category ->
@@ -174,9 +166,10 @@ private fun GenreChipRow(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = AppTheme.spacing
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = spacing.lg, vertical = spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = modifier,
     ) {
         items(genres, key = { it.id }) { genre ->
@@ -210,25 +203,7 @@ private fun ShimmerMovieGrid(
         userScrollEnabled = false,
         modifier = modifier.fillMaxSize(),
     ) {
-        items(12) {
-            ShimmerPosterCard()
-        }
-    }
-}
-
-@Composable
-private fun ShimmerPosterCard(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-    ) {
-        Box(
-            modifier = Modifier
-                .aspectRatio(2f / 3f)
-                .shimmerEffect(),
-        )
+        items(12) { ShimmerPosterCard() }
     }
 }
 
@@ -272,7 +247,12 @@ private fun MovieGrid(
         modifier = modifier.fillMaxSize(),
     ) {
         items(movies, key = { it.id }) { movie ->
-            MoviePosterCard(movie = movie, onClick = { onMovieClick(movie.id) })
+            MoviePosterCard(
+                posterUrl = movie.posterUrl,
+                title = movie.title,
+                voteAverage = movie.voteAverage,
+                onClick = { onMovieClick(movie.id) },
+            )
         }
         if (isLoadingMore) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -283,65 +263,11 @@ private fun MovieGrid(
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        color = Color(0xFFE8A020),
+                        color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 2.dp,
                         modifier = Modifier.padding(4.dp),
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MoviePosterCard(
-    movie: Movie,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Box(modifier = Modifier.aspectRatio(2f / 3f)) {
-            RemoteImage(
-                url = movie.posterUrl,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0.55f to Color.Transparent,
-                                1.0f to Color(0xE6000000),
-                            ),
-                        ),
-                    ),
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = AppTheme.spacing.sm, vertical = AppTheme.spacing.sm),
-            ) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFE8A020),
-                )
             }
         }
     }

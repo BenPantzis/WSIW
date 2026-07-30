@@ -1,12 +1,9 @@
 package com.bsp.wsiw.feature.search
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,8 +15,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,26 +25,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Movie
-import com.bsp.wsiw.core.ui.component.RemoteImage
+import com.bsp.wsiw.core.ui.component.EmptyState
+import com.bsp.wsiw.core.ui.component.MoviePosterCard
 import com.bsp.wsiw.core.ui.component.ScreenScaffold
-import com.bsp.wsiw.core.ui.component.shimmerEffect
+import com.bsp.wsiw.core.ui.component.ShimmerPosterCard
 import com.bsp.wsiw.core.ui.theme.AppTheme
-import kotlin.math.roundToInt
 
 @Composable
 fun SearchScreen(
@@ -199,31 +189,19 @@ private fun TrendingIdleState(
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) { TrendingHeader() }
             items(trendingMovies, key = { it.id }) { movie ->
-                SearchPosterCard(movie = movie, onClick = { onMovieClick(movie.id) })
-            }
-        }
-        else -> Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(spacing.sm),
-            ) {
-                Text(text = "🎬", style = MaterialTheme.typography.displayMedium)
-                Text(
-                    text = stringResource(R.string.search_idle_headline),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.search_idle_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
+                MoviePosterCard(
+                    posterUrl = movie.posterUrl,
+                    title = movie.title,
+                    voteAverage = movie.voteAverage,
+                    onClick = { onMovieClick(movie.id) },
                 )
             }
         }
+        else -> EmptyState(
+            icon = "🎬",
+            title = stringResource(R.string.search_idle_headline),
+            body = stringResource(R.string.search_idle_body),
+        )
     }
 }
 
@@ -244,29 +222,11 @@ private fun TrendingHeader() {
 
 @Composable
 private fun NoResultsState(query: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
-            modifier = Modifier.padding(horizontal = AppTheme.spacing.xxl),
-        ) {
-            Text(text = "🔍", style = MaterialTheme.typography.displayMedium)
-            Text(
-                text = stringResource(R.string.search_no_results_title, query),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = stringResource(R.string.search_no_results_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    EmptyState(
+        icon = "🔍",
+        title = stringResource(R.string.search_no_results_title, query),
+        body = stringResource(R.string.search_no_results_body),
+    )
 }
 
 // --- Results grid ---
@@ -287,57 +247,12 @@ private fun SearchResultsGrid(
         modifier = modifier.fillMaxSize(),
     ) {
         items(movies, key = { it.id }) { movie ->
-            SearchPosterCard(movie = movie, onClick = { onMovieClick(movie.id) })
-        }
-    }
-}
-
-@Composable
-private fun SearchPosterCard(movie: Movie, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Box(modifier = Modifier.aspectRatio(2f / 3f)) {
-            RemoteImage(
-                url = movie.posterUrl,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+            MoviePosterCard(
+                posterUrl = movie.posterUrl,
+                title = movie.title,
+                voteAverage = movie.voteAverage,
+                onClick = { onMovieClick(movie.id) },
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0.55f to Color.Transparent,
-                                1.0f to Color(0xE6000000),
-                            ),
-                        ),
-                    ),
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = AppTheme.spacing.sm, vertical = AppTheme.spacing.sm),
-            ) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFE8A020),
-                )
-            }
         }
     }
 }
@@ -362,19 +277,6 @@ private fun SearchShimmerGrid(
         if (headerSlot != null) {
             item(span = { GridItemSpan(maxLineSpan) }) { headerSlot() }
         }
-        items(12) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                elevation = CardDefaults.cardElevation(0.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(2f / 3f)
-                        .shimmerEffect(),
-                )
-            }
-        }
+        items(12) { ShimmerPosterCard() }
     }
 }

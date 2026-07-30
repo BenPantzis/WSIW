@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -47,20 +47,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.ui.component.EmptyState
+import com.bsp.wsiw.core.ui.component.MoviePosterCard
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.ScreenScaffold
-import com.bsp.wsiw.core.ui.component.shimmerEffect
+import com.bsp.wsiw.core.ui.component.ShimmerPosterCard
 import com.bsp.wsiw.core.ui.theme.AppTheme
 import kotlin.math.roundToInt
 
@@ -233,32 +233,12 @@ private fun WatchlistPosterCard(
     onClick: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    Card(
+    MoviePosterCard(
+        posterUrl = movie.posterUrl,
+        title = movie.title,
+        voteAverage = movie.voteAverage,
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Box(modifier = Modifier.aspectRatio(2f / 3f)) {
-            RemoteImage(
-                url = movie.posterUrl,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0.55f to Color.Transparent,
-                                1.0f to Color(0xE6000000),
-                            ),
-                        ),
-                    ),
-            )
+        overlayContent = {
             IconButton(
                 onClick = onRemove,
                 modifier = Modifier
@@ -275,31 +255,13 @@ private fun WatchlistPosterCard(
                     Icon(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = stringResource(R.string.watchlist_cd_remove),
-                        tint = Color(0xFFE8A020),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp),
                     )
                 }
             }
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = AppTheme.spacing.sm, vertical = AppTheme.spacing.sm),
-            ) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFE8A020),
-                )
-            }
-        }
-    }
+        },
+    )
 }
 
 // --- List ---
@@ -418,7 +380,7 @@ private fun WatchlistListItem(
                     Text(
                         text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFFE8A020),
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
@@ -433,33 +395,13 @@ private fun WatchlistEmptyState(
     onBrowseMovies: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
-            modifier = Modifier.padding(horizontal = AppTheme.spacing.xxl),
-        ) {
-            Text(text = "🔖", style = MaterialTheme.typography.displayMedium)
-            Text(
-                text = stringResource(R.string.watchlist_empty_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = stringResource(R.string.watchlist_empty_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(AppTheme.spacing.sm))
-            Button(onClick = onBrowseMovies) {
-                Text(stringResource(R.string.watchlist_browse_button))
-            }
-        }
-    }
+    EmptyState(
+        icon = "🔖",
+        title = stringResource(R.string.watchlist_empty_title),
+        body = stringResource(R.string.watchlist_empty_body),
+        modifier = modifier,
+        action = { Button(onClick = onBrowseMovies) { Text(stringResource(R.string.watchlist_browse_button)) } },
+    )
 }
 
 // --- Shimmer ---
@@ -478,19 +420,6 @@ private fun WatchlistShimmerGrid(
         userScrollEnabled = false,
         modifier = modifier.fillMaxSize(),
     ) {
-        items(6) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                elevation = CardDefaults.cardElevation(0.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(2f / 3f)
-                        .shimmerEffect(),
-                )
-            }
-        }
+        items(6) { ShimmerPosterCard() }
     }
 }

@@ -37,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,13 +44,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.ui.UiText
+import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.ErrorContent
-import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
 import com.bsp.wsiw.core.ui.theme.AppTheme
 import com.bsp.wsiw.core.ui.util.formatTmdbDate
 
-private val Gold = Color(0xFFE8A020)
 
 @Composable
 fun ReviewsScreen(
@@ -127,7 +125,7 @@ private fun ReviewsContent(
                             ReviewCard(review = review)
                             if (index < sorted.lastIndex) {
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 20.dp),
+                                    modifier = Modifier.padding(horizontal = AppTheme.spacing.content),
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                                 )
                             }
@@ -193,8 +191,8 @@ private fun ReviewsTopBar(title: String, onBack: () -> Unit) {
 @Composable
 private fun SortChipRow(selected: ReviewSort, onSelect: (ReviewSort) -> Unit) {
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = AppTheme.spacing.lg, vertical = AppTheme.spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
     ) {
         items(ReviewSort.entries) { sort ->
             FilterChip(
@@ -212,33 +210,15 @@ private fun ReviewCard(review: Review) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = spacing.md),
+            .padding(horizontal = AppTheme.spacing.content, vertical = spacing.md),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (review.avatarUrl != null) {
-                RemoteImage(
-                    url = review.avatarUrl,
-                    contentDescription = review.author,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = review.author.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+            AvatarImage(
+                url = review.avatarUrl,
+                name = review.author,
+                size = 40.dp,
+                textStyle = MaterialTheme.typography.labelLarge,
+            )
             Spacer(Modifier.width(spacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -255,7 +235,7 @@ private fun ReviewCard(review: Review) {
             }
             if (review.rating != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "★", color = Gold, style = MaterialTheme.typography.labelMedium)
+                    Text(text = "★", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.width(2.dp))
                     Text(
                         text = "${review.rating}/10",
@@ -278,7 +258,7 @@ private fun ReviewCard(review: Review) {
 @Composable
 private fun ReviewsShimmer() {
     val spacing = AppTheme.spacing
-    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = spacing.md)) {
+    Column(modifier = Modifier.padding(horizontal = AppTheme.spacing.content, vertical = spacing.md)) {
         repeat(4) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(40.dp).clip(CircleShape).shimmerEffect())

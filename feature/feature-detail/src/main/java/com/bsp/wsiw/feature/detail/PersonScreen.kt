@@ -1,14 +1,12 @@
 package com.bsp.wsiw.feature.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -43,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.PersonDetail
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.ErrorContent
@@ -53,7 +49,6 @@ import com.bsp.wsiw.core.ui.theme.AppTheme
 import com.bsp.wsiw.core.ui.util.formatTmdbDate
 
 private val ProfileHeight = 320.dp
-private val Gold = Color(0xFFE8A020)
 
 @Composable
 fun PersonScreen(
@@ -175,7 +170,7 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = AppTheme.spacing.content)
                     .padding(bottom = if (person.filmography.isEmpty()) 48.dp else 0.dp),
             ) {
                 Text(
@@ -187,7 +182,7 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
                 Text(
                     text = person.knownForDepartment,
                     style = MaterialTheme.typography.labelMedium,
-                    color = Gold,
+                    color = MaterialTheme.colorScheme.primary,
                 )
 
                 if (person.birthday != null || person.placeOfBirth != null) {
@@ -227,12 +222,16 @@ private fun PersonDetailContent(person: PersonDetail, onMovieClick: (Int) -> Uni
 
         if (person.filmography.isNotEmpty()) {
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 20.dp),
+                contentPadding = PaddingValues(horizontal = AppTheme.spacing.content),
                 horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
                 modifier = Modifier.padding(bottom = 48.dp),
             ) {
                 items(person.filmography, key = { it.id }) { movie ->
-                    FilmographyCard(movie = movie, onClick = { onMovieClick(movie.id) })
+                    MovieThumbnailCard(
+                        posterUrl = movie.posterUrl,
+                        title = movie.title,
+                        onClick = { onMovieClick(movie.id) },
+                    )
                 }
             }
         }
@@ -267,46 +266,6 @@ private fun InfoLine(label: String, value: String) {
     }
 }
 
-@Composable
-private fun FilmographyCard(movie: Movie, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .width(110.dp)
-            .aspectRatio(2f / 3f)
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .then(Modifier.clickable(onClick = onClick)),
-    ) {
-        RemoteImage(
-            url = movie.posterUrl,
-            contentDescription = movie.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.5f to Color.Transparent,
-                            1.0f to Color(0xCC0D0D0D),
-                        ),
-                    ),
-                ),
-        )
-        Text(
-            text = movie.title,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
-            maxLines = 2,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(6.dp),
-        )
-    }
-}
 
 @Composable
 private fun PersonLoadingContent() {
@@ -322,7 +281,7 @@ private fun PersonLoadingContent() {
                 .shimmerEffect(),
         )
         Spacer(Modifier.height(16.dp))
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(horizontal = AppTheme.spacing.content)) {
             Box(modifier = Modifier.fillMaxWidth(0.55f).height(28.dp).shimmerEffect())
             Spacer(Modifier.height(8.dp))
             Box(modifier = Modifier.fillMaxWidth(0.3f).height(16.dp).shimmerEffect())
