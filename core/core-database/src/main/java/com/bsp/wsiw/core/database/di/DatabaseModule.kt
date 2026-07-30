@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.bsp.wsiw.core.database.AppDatabase
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
+import com.bsp.wsiw.core.database.dao.RatingDao
 import com.bsp.wsiw.core.database.dao.WatchlistDao
 import dagger.Module
 import dagger.Provides
@@ -25,7 +26,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "app_database",
         )
-            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5)
             .build()
 
     @Provides
@@ -36,4 +37,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMovieDetailCacheDao(db: AppDatabase): MovieDetailCacheDao = db.movieDetailCacheDao()
+
+    @Provides
+    fun provideRatingDao(db: AppDatabase): RatingDao = db.ratingDao()
 }

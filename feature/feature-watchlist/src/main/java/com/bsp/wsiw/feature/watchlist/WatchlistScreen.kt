@@ -21,9 +21,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material3.Button
@@ -55,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlin.math.roundToInt
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.ui.component.EmptyState
 import com.bsp.wsiw.core.ui.component.MoviePosterCard
@@ -220,6 +223,7 @@ private fun WatchlistGrid(
         items(uiState.sortedMovies, key = { it.id }) { movie ->
             WatchlistPosterCard(
                 movie = movie,
+                userRating = uiState.ratings[movie.id],
                 onClick = { onMovieClick(movie.id) },
                 onRemove = { onAction(WatchlistAction.RemoveMovie(movie.id)) },
             )
@@ -230,6 +234,7 @@ private fun WatchlistGrid(
 @Composable
 private fun WatchlistPosterCard(
     movie: Movie,
+    userRating: Float?,
     onClick: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -257,6 +262,29 @@ private fun WatchlistPosterCard(
                         contentDescription = stringResource(R.string.watchlist_cd_remove),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+            if (userRating != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(AppTheme.spacing.xs)
+                        .background(Color(0xCC000000), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(10.dp),
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Text(
+                        text = (userRating / 2f).roundToInt().toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
                     )
                 }
             }
@@ -290,6 +318,7 @@ private fun WatchlistList(
         items(uiState.sortedMovies, key = { it.id }) { movie ->
             WatchlistListItem(
                 movie = movie,
+                userRating = uiState.ratings[movie.id],
                 onClick = { onMovieClick(movie.id) },
                 onRemove = { onAction(WatchlistAction.RemoveMovie(movie.id)) },
             )
@@ -300,6 +329,7 @@ private fun WatchlistList(
 @Composable
 private fun WatchlistListItem(
     movie: Movie,
+    userRating: Float?,
     onClick: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -377,11 +407,23 @@ private fun WatchlistListItem(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    Text(
-                        text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "★ ${(movie.voteAverage * 10).roundToInt() / 10.0}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        if (userRating != null) {
+                            Text(
+                                text = "· Your rating: ${"★".repeat((userRating / 2f).roundToInt())}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color(0xFFFFD700),
+                            )
+                        }
+                    }
                 }
             }
         }

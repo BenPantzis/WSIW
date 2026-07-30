@@ -8,14 +8,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.bsp.wsiw.core.database.converter.Converters
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
+import com.bsp.wsiw.core.database.dao.RatingDao
 import com.bsp.wsiw.core.database.dao.WatchlistDao
 import com.bsp.wsiw.core.database.entity.MovieDetailEntity
 import com.bsp.wsiw.core.database.entity.PopularMovieEntity
+import com.bsp.wsiw.core.database.entity.RatingEntity
 import com.bsp.wsiw.core.database.entity.WatchlistEntity
 
 @Database(
-    entities = [WatchlistEntity::class, PopularMovieEntity::class, MovieDetailEntity::class],
-    version = 4,
+    entities = [WatchlistEntity::class, PopularMovieEntity::class, MovieDetailEntity::class, RatingEntity::class],
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -23,6 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun watchlistDao(): WatchlistDao
     abstract fun popularMovieCacheDao(): PopularMovieCacheDao
     abstract fun movieDetailCacheDao(): MovieDetailCacheDao
+    abstract fun ratingDao(): RatingDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -76,6 +79,19 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN recommendedMovies TEXT NOT NULL DEFAULT '[]'")
                 db.execSQL("ALTER TABLE movie_detail_cache ADD COLUMN certification TEXT")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `ratings` (
+                        `movieId` INTEGER NOT NULL,
+                        `rating` REAL NOT NULL,
+                        `ratedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`movieId`)
+                    )""",
+                )
             }
         }
     }

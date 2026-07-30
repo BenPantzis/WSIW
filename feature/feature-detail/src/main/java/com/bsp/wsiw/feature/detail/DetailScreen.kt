@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -31,6 +32,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +43,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -159,12 +165,19 @@ internal fun DetailContent(
             isRefreshing = uiState.isRefreshing,
             snackbarHostState = snackbarHostState,
             watchProviders = uiState.watchProviders,
+            userRating = uiState.userRating,
+            showRatingDialog = uiState.showRatingDialog,
+            onShowRatingDialog = { onAction(DetailAction.ShowRatingDialog) },
+            onDismissRatingDialog = { onAction(DetailAction.DismissRatingDialog) },
+            onRateMovie = { stars -> onAction(DetailAction.RateMovie(stars)) },
+            onRemoveRating = { onAction(DetailAction.RemoveRating) },
         )
     }
 }
 
 // --- Collapsing detail ---
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CollapsingDetailContent(
     movie: MovieDetail,
@@ -180,6 +193,12 @@ private fun CollapsingDetailContent(
     isRefreshing: Boolean,
     snackbarHostState: SnackbarHostState,
     watchProviders: WatchProviders? = null,
+    userRating: Float? = null,
+    showRatingDialog: Boolean = false,
+    onShowRatingDialog: () -> Unit = {},
+    onDismissRatingDialog: () -> Unit = {},
+    onRateMovie: (Int) -> Unit = {},
+    onRemoveRating: () -> Unit = {},
 ) {
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -217,7 +236,18 @@ private fun CollapsingDetailContent(
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
                     .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = 16.dp),
             )
-            ContentList(movie = movie, listState = listState, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount, watchProviders = watchProviders)
+            ContentList(
+                movie = movie,
+                listState = listState,
+                onMovieClick = onMovieClick,
+                onPersonClick = onPersonClick,
+                onReviewsClick = onReviewsClick,
+                previewReviews = previewReviews,
+                totalReviewCount = totalReviewCount,
+                watchProviders = watchProviders,
+                userRating = userRating,
+                onShowRatingDialog = onShowRatingDialog,
+            )
             TopBar(
                 title = movie.title,
                 scrollFraction = scrollFraction,
@@ -228,6 +258,21 @@ private fun CollapsingDetailContent(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+        }
+
+        if (showRatingDialog) {
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(
+                onDismissRequest = onDismissRatingDialog,
+                sheetState = sheetState,
+            ) {
+                RatingBottomSheet(
+                    currentRating = userRating,
+                    accentColor = accentColor,
+                    onRate = onRateMovie,
+                    onRemove = onRemoveRating,
+                )
+            }
         }
     }
 }
@@ -291,6 +336,8 @@ private fun ContentList(
     previewReviews: List<Review>,
     totalReviewCount: Int,
     watchProviders: WatchProviders? = null,
+    userRating: Float? = null,
+    onShowRatingDialog: () -> Unit = {},
 ) {
     LazyColumn(
         state = listState,
@@ -300,7 +347,17 @@ private fun ContentList(
             Spacer(modifier = Modifier.height(BackdropHeight - ContentOverlap))
         }
         item {
-            MovieDetailCard(movie = movie, onMovieClick = onMovieClick, onPersonClick = onPersonClick, onReviewsClick = onReviewsClick, previewReviews = previewReviews, totalReviewCount = totalReviewCount, watchProviders = watchProviders)
+            MovieDetailCard(
+                movie = movie,
+                onMovieClick = onMovieClick,
+                onPersonClick = onPersonClick,
+                onReviewsClick = onReviewsClick,
+                previewReviews = previewReviews,
+                totalReviewCount = totalReviewCount,
+                watchProviders = watchProviders,
+                userRating = userRating,
+                onShowRatingDialog = onShowRatingDialog,
+            )
         }
     }
 }
@@ -396,6 +453,8 @@ private fun MovieDetailCard(
     previewReviews: List<Review>,
     totalReviewCount: Int,
     watchProviders: WatchProviders? = null,
+    userRating: Float? = null,
+    onShowRatingDialog: () -> Unit = {},
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -431,6 +490,9 @@ private fun MovieDetailCard(
                     Spacer(Modifier.height(spacing.lg))
                     GenreChipsRow(genres = movie.genres)
                 }
+
+                Spacer(Modifier.height(spacing.lg))
+                RatingRow(userRating = userRating, onClick = onShowRatingDialog)
 
                 Spacer(Modifier.height(spacing.xl))
                 SectionHeader(stringResource(R.string.detail_section_overview))
@@ -900,6 +962,84 @@ private fun ProviderRow(label: String, providers: List<WatchProvider>) {
                     .size(36.dp)
                     .clip(MaterialTheme.shapes.small),
             )
+        }
+    }
+}
+
+// --- Rating ---
+
+@Composable
+private fun RatingRow(
+    userRating: Float?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accent = LocalAccentColor.current
+    val starsFilled = userRating?.let { (it / 2f).roundToInt().coerceIn(1, 5) } ?: 0
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+    ) {
+        Text(
+            text = if (userRating != null) "Your rating" else "Rate this film",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(94.dp),
+        )
+        Spacer(Modifier.width(AppTheme.spacing.sm))
+        Text(
+            text = "★".repeat(starsFilled) + "☆".repeat(5 - starsFilled),
+            style = MaterialTheme.typography.titleSmall,
+            color = if (starsFilled > 0) accent else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+        )
+    }
+}
+
+@Composable
+private fun RatingBottomSheet(
+    currentRating: Float?,
+    accentColor: Color,
+    onRate: (Int) -> Unit,
+    onRemove: () -> Unit,
+) {
+    val starsFilled = currentRating?.let { (it / 2f).roundToInt().coerceIn(1, 5) } ?: 0
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(top = 8.dp, bottom = 32.dp)
+            .navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = "Rate this film",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            for (i in 1..5) {
+                Text(
+                    text = if (i <= starsFilled) "★" else "☆",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = if (i <= starsFilled) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                    modifier = Modifier.clickable { onRate(i) },
+                )
+            }
+        }
+
+        if (currentRating != null) {
+            TextButton(onClick = onRemove) {
+                Text(
+                    text = "Remove rating",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }

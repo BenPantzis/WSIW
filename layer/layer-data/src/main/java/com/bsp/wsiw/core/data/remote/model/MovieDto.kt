@@ -13,4 +13,5 @@ data class MovieDto(
     @SerializedName("vote_count") val voteCount: Int,
     val popularity: Double,
     @SerializedName("original_language") val originalLanguage: String,
+    val rating: Float? = null,
 )

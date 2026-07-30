@@ -12,7 +12,9 @@ import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
+import com.bsp.wsiw.core.domain.usecase.GetMovieRatingUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
+import com.bsp.wsiw.core.domain.usecase.RateMovieUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
@@ -33,6 +35,8 @@ class DetailViewModel @AssistedInject constructor(
     private val getMovieDetail: GetMovieDetailUseCase,
     private val isWatchlisted: IsWatchlistedUseCase,
     private val toggleWatchlist: ToggleWatchlistUseCase,
+    private val getMovieRating: GetMovieRatingUseCase,
+    private val rateMovie: RateMovieUseCase,
     private val movieRepository: MovieRepository,
     private val sessionRepository: SessionRepository,
     @param:ApplicationContext private val context: Context,
@@ -58,6 +62,11 @@ class DetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             sessionRepository.isAuthenticated.collect { authenticated ->
                 updateState { copy(isAuthenticated = authenticated) }
+            }
+        }
+        viewModelScope.launch {
+            getMovieRating(movieId).collect { rating ->
+                updateState { copy(userRating = rating) }
             }
         }
     }
@@ -86,6 +95,23 @@ class DetailViewModel @AssistedInject constructor(
                         isWatchlisted = uiState.value.isWatchlisted,
                     )
                 }
+            }
+            DetailAction.ShowRatingDialog -> {
+                if (!uiState.value.isAuthenticated) {
+                    viewModelScope.launch { sendEvent(DetailEvent.SignInRequired) }
+                    return
+                }
+                updateState { copy(showRatingDialog = true) }
+            }
+            DetailAction.DismissRatingDialog -> updateState { copy(showRatingDialog = false) }
+            is DetailAction.RateMovie -> {
+                val rating = action.stars * 2f
+                updateState { copy(showRatingDialog = false) }
+                viewModelScope.launch { rateMovie(movieId, rating) }
+            }
+            DetailAction.RemoveRating -> {
+                updateState { copy(showRatingDialog = false) }
+                viewModelScope.launch { rateMovie.remove(movieId) }
             }
         }
     }

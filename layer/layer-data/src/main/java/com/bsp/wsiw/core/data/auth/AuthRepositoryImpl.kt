@@ -5,6 +5,7 @@ import com.bsp.wsiw.core.data.remote.TmdbAuthService
 import com.bsp.wsiw.core.data.remote.model.AccessTokenBody
 import com.bsp.wsiw.core.data.remote.model.RequestTokenBody
 import com.bsp.wsiw.core.domain.repository.AuthRepository
+import com.bsp.wsiw.core.domain.repository.RatingRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.repository.WatchlistRepository
 import javax.inject.Inject
@@ -17,6 +18,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val tokenProvider: TokenProvider,
     private val sessionRepository: SessionRepository,
     private val watchlistRepository: WatchlistRepository,
+    private val ratingRepository: RatingRepository,
 ) : AuthRepository {
 
     override suspend fun getRequestToken(): String =
@@ -47,5 +49,6 @@ class AuthRepositoryImpl @Inject constructor(
         tokenProvider.clearTokens()
         sessionRepository.clearSession()
         watchlistRepository.clearAll()
+        ratingRepository.clearAll()
     }
 }

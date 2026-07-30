@@ -6,9 +6,11 @@ import com.bsp.wsiw.core.data.remote.model.MovieListResponseDto
 import com.bsp.wsiw.core.data.remote.model.PersonDetailDto
 import com.bsp.wsiw.core.data.remote.model.ReviewListResponseDto
 import com.bsp.wsiw.core.data.remote.model.WatchProvidersResponseDto
+import com.bsp.wsiw.core.data.remote.model.RatingBody
 import com.bsp.wsiw.core.data.remote.model.WatchlistUpdateBody
 import com.bsp.wsiw.core.data.remote.model.WatchlistUpdateResponseDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -102,5 +104,23 @@ interface TmdbApiService {
     suspend fun updateWatchlist(
         @Path("accountId") accountId: Int,
         @Body body: WatchlistUpdateBody,
+    ): WatchlistUpdateResponseDto
+
+    @GET("account/{accountId}/rated/movies")
+    suspend fun getRatedMovies(
+        @Path("accountId") accountId: Int,
+        @Query("page") page: Int = 1,
+        @Query("sort_by") sortBy: String = "created_at.desc",
+    ): MovieListResponseDto
+
+    @POST("movie/{movieId}/rating")
+    suspend fun rateMovie(
+        @Path("movieId") movieId: Int,
+        @Body body: RatingBody,
+    ): WatchlistUpdateResponseDto
+
+    @DELETE("movie/{movieId}/rating")
+    suspend fun deleteMovieRating(
+        @Path("movieId") movieId: Int,
     ): WatchlistUpdateResponseDto
 }

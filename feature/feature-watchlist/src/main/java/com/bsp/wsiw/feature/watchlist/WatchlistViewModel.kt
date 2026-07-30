@@ -3,7 +3,9 @@ package com.bsp.wsiw.feature.watchlist
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.datastore.PreferencesRepository
+import com.bsp.wsiw.core.domain.usecase.GetAllRatingsUseCase
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
+import com.bsp.wsiw.core.domain.usecase.RefreshRatingsUseCase
 import com.bsp.wsiw.core.domain.usecase.RefreshWatchlistUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
@@ -18,6 +20,8 @@ class WatchlistViewModel @Inject constructor(
     private val getWatchlist: GetWatchlistUseCase,
     private val toggleWatchlist: ToggleWatchlistUseCase,
     private val refreshWatchlist: RefreshWatchlistUseCase,
+    private val getAllRatings: GetAllRatingsUseCase,
+    private val refreshRatings: RefreshRatingsUseCase,
     private val preferences: PreferencesRepository,
 ) : BaseViewModel<WatchlistAction, WatchlistEvent, WatchlistUiState>(
     initialState = WatchlistUiState(),
@@ -32,7 +36,13 @@ class WatchlistViewModel @Inject constructor(
                 updateState { copy(isLoading = false, movies = movies) }
             }
         }
+        viewModelScope.launch {
+            getAllRatings().collect { ratingsMap ->
+                updateState { copy(ratings = ratingsMap) }
+            }
+        }
         viewModelScope.launch { refreshWatchlist() }
+        viewModelScope.launch { refreshRatings() }
     }
 
     override fun handleAction(action: WatchlistAction) {

@@ -8,6 +8,10 @@ import com.bsp.wsiw.core.ui.UiText
 sealed interface DetailAction {
     data object Retry : DetailAction
     data object ToggleWatchlist : DetailAction
+    data object ShowRatingDialog : DetailAction
+    data object DismissRatingDialog : DetailAction
+    data class RateMovie(val stars: Int) : DetailAction
+    data object RemoveRating : DetailAction
 }
 
 sealed interface DetailEvent {
@@ -26,4 +30,6 @@ data class DetailUiState(
     val previewReviews: List<Review> = emptyList(),
     val totalReviewCount: Int = 0,
     val watchProviders: WatchProviders? = null,
+    val userRating: Float? = null,
+    val showRatingDialog: Boolean = false,
 )
