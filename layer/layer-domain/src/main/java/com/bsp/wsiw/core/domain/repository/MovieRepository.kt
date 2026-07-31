@@ -20,4 +20,5 @@ interface MovieRepository {
     fun getPersonDetail(personId: Int): Flow<Result<PersonDetail>>
     fun getMovieReviews(movieId: Int, page: Int = 1): Flow<Result<PagedResult<Review>>>
     fun getWatchProviders(movieId: Int): Flow<Result<WatchProviders>>
+    suspend fun getFavoriteCount(accountId: Int): Int
 }

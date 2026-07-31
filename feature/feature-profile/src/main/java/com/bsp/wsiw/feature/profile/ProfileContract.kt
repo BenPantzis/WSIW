@@ -1,5 +1,7 @@
 package com.bsp.wsiw.feature.profile
 
+import com.bsp.wsiw.core.domain.model.Movie
+
 sealed interface ProfileAction {
     data object SignIn : ProfileAction
     data object SignOut : ProfileAction
@@ -19,6 +21,11 @@ data class ProfileUiState(
     val pendingRequestToken: String? = null,
     val isExchangingToken: Boolean = false,
     val error: String? = null,
+    val watchlistCount: Int = 0,
+    val ratingsCount: Int = 0,
+    val averageRating: Float? = null,
+    val favoriteCount: Int = 0,
+    val ratedMovies: List<Pair<Movie, Float>> = emptyList(),
 ) {
     val isAwaitingApproval get() = pendingRequestToken != null && !isSigningIn
 }

@@ -113,6 +113,12 @@ interface TmdbApiService {
         @Query("sort_by") sortBy: String = "created_at.desc",
     ): MovieListResponseDto
 
+    @GET("account/{accountId}/favorite/movies")
+    suspend fun getFavoriteMovies(
+        @Path("accountId") accountId: Int,
+        @Query("page") page: Int = 1,
+    ): MovieListResponseDto
+
     @POST("movie/{movieId}/rating")
     suspend fun rateMovie(
         @Path("movieId") movieId: Int,

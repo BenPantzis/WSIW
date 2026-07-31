@@ -65,8 +65,10 @@ import com.bsp.wsiw.feature.home.navigation.HomeKey
 import com.bsp.wsiw.feature.home.navigation.homeDestination
 import com.bsp.wsiw.feature.profile.navigation.LoginCallbackKey
 import com.bsp.wsiw.feature.profile.navigation.ProfileKey
+import com.bsp.wsiw.feature.profile.navigation.RatedMoviesKey
 import com.bsp.wsiw.feature.profile.navigation.loginCallbackDestination
 import com.bsp.wsiw.feature.profile.navigation.profileDestination
+import com.bsp.wsiw.feature.profile.navigation.ratedMoviesDestination
 import com.bsp.wsiw.feature.search.navigation.SearchKey
 import com.bsp.wsiw.feature.search.navigation.searchDestination
 import com.bsp.wsiw.feature.watchlist.navigation.WatchlistKey
@@ -220,6 +222,10 @@ private fun WsiwApp(
         backStack.add(ReviewsKey(movieId, movieTitle))
     }
 
+    fun navigateToRatedMovies() {
+        backStack.add(RatedMoviesKey)
+    }
+
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
@@ -239,21 +245,27 @@ private fun WsiwApp(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
-                if (targetState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                if (targetState.entries.lastOrNull()?.contentKey.let {
+                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                    }) {
                     (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
                 } else {
                     fadeIn() togetherWith fadeOut()
                 }
             },
             popTransitionSpec = {
-                if (initialState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                if (initialState.entries.lastOrNull()?.contentKey.let {
+                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                    }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {
                     fadeIn() togetherWith fadeOut()
                 }
             },
             predictivePopTransitionSpec = {
-                if (initialState.entries.lastOrNull()?.contentKey.toString().startsWith("DetailKey")) {
+                if (initialState.entries.lastOrNull()?.contentKey.let {
+                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                    }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {
                     fadeIn() togetherWith fadeOut()
@@ -270,7 +282,8 @@ private fun WsiwApp(
                     onMovieClick = ::navigateToDetail,
                     onBrowseMovies = { navigateToTab(HomeKey) },
                 )
-                profileDestination()
+                profileDestination(onSeeAllRatings = ::navigateToRatedMovies)
+                ratedMoviesDestination(onBack = { backStack.removeLastOrNull() })
                 loginCallbackDestination(
                     onSuccess = {
                         backStack.removeLastOrNull()

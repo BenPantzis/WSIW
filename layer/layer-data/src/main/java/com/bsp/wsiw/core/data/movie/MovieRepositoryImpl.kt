@@ -155,4 +155,8 @@ class MovieRepositoryImpl @Inject constructor(
                 Result.Loading -> Result.Loading
             }
         }
+
+    override suspend fun getFavoriteCount(accountId: Int): Int = try {
+        apiService.getFavoriteMovies(accountId, page = 1).totalResults
+    } catch (_: Exception) { 0 }
 }

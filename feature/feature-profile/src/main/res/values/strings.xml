@@ -1,0 +1,31 @@
+<resources>
+    <!-- Authenticated -->
+    <string name="profile_auth_subtitle">Signed in via TMDB</string>
+    <string name="profile_stats_watchlist">Watchlist</string>
+    <string name="profile_stats_rated">Rated</string>
+    <string name="profile_stats_avg_rating">Avg Rating</string>
+    <string name="profile_stats_favorites">Favorites</string>
+    <string name="profile_ratings_header">Your Ratings</string>
+    <string name="profile_rating_badge">★ %d</string>
+    <string name="profile_breakdown_header">Rating Breakdown</string>
+    <string name="profile_action_sign_out">Sign out</string>
+    <string name="profile_ratings_see_all">See all</string>
+
+    <!-- All ratings screen -->
+    <string name="profile_rated_all_title">Ratings</string>
+    <string name="profile_rated_empty_title">No ratings yet</string>
+    <string name="profile_rated_empty_body">Rate movies on their detail page to see them here</string>
+    <string name="profile_rated_load_more">Load more</string>
+    <string name="profile_cd_back">Navigate back</string>
+
+    <!-- Awaiting approval -->
+    <string name="profile_approval_title">Approve on TMDB</string>
+    <string name="profile_approval_body">After approving in the browser, tap Continue to complete sign-in.</string>
+    <string name="profile_approval_continue">Continue</string>
+    <string name="profile_approval_cancel">Cancel</string>
+
+    <!-- Unauthenticated -->
+    <string name="profile_unauthenticated_title">TMDB</string>
+    <string name="profile_unauthenticated_body">Connect your TMDB account to rate films and sync your watchlist.</string>
+    <string name="profile_sign_in_button">Sign in with TMDB</string>
+</resources>
