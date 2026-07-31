@@ -6,6 +6,7 @@ import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.testing.MainDispatcherRule
 import com.bsp.wsiw.core.testing.fakeMovie
+import com.bsp.wsiw.core.ui.UiText
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -52,7 +53,8 @@ class HomeViewModelTest {
         val vm = createViewModel()
 
         assertFalse(vm.uiState.value.isLoading)
-        assertEquals("Network error", vm.uiState.value.error)
+        assertNotNull(vm.uiState.value.error)
+        assertTrue(vm.uiState.value.error is UiText.StringResource)
         assertTrue(vm.uiState.value.movies.isEmpty())
     }
 
@@ -63,7 +65,8 @@ class HomeViewModelTest {
 
         val vm = createViewModel()
 
-        assertEquals("Something went wrong", vm.uiState.value.error)
+        assertNotNull(vm.uiState.value.error)
+        assertTrue(vm.uiState.value.error is UiText.StringResource)
     }
 
     @Test

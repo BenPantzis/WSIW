@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
+import com.bsp.wsiw.core.ui.UiText
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -119,7 +121,8 @@ class SearchViewModelTest {
         vm.onAction(SearchAction.UpdateQuery("batman"))
         advanceTimeBy(400)
 
-        assertEquals("Search failed", vm.uiState.value.error)
+        assertNotNull(vm.uiState.value.error)
+        assertTrue(vm.uiState.value.error is UiText.StringResource)
         assertTrue(vm.uiState.value.movies.isEmpty())
     }
 }
