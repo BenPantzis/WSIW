@@ -9,6 +9,11 @@ val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
     namespace = "com.bsp.wsiw.core.database"
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 ksp {
