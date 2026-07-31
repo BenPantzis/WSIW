@@ -20,4 +20,10 @@ dependencies {
     implementation(catalog.findLibrary("room-runtime").get())
     implementation(catalog.findLibrary("room-ktx").get())
     ksp(catalog.findLibrary("room-compiler").get())
+
+    testImplementation(catalog.findLibrary("room-testing").get())
+    testImplementation(catalog.findLibrary("junit").get())
+    testImplementation(catalog.findLibrary("robolectric").get())
+    testImplementation(catalog.findLibrary("coroutines-test").get())
+    testImplementation(catalog.findLibrary("turbine").get())
 }

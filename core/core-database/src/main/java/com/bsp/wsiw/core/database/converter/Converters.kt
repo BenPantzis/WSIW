@@ -45,7 +45,7 @@ class Converters {
                 id = o.getInt("id"),
                 name = o.getString("name"),
                 character = o.getString("character"),
-                profileUrl = o.optString("profileUrl", "").takeIf { it.isNotEmpty() },
+                profileUrl = if (o.isNull("profileUrl")) null else o.getString("profileUrl"),
             )
         }
     }
@@ -78,8 +78,8 @@ class Converters {
                 id = o.getInt("id"),
                 title = o.getString("title"),
                 overview = o.getString("overview"),
-                posterUrl = o.optString("posterUrl", "").takeIf { it.isNotEmpty() },
-                backdropUrl = o.optString("backdropUrl", "").takeIf { it.isNotEmpty() },
+                posterUrl = if (o.isNull("posterUrl")) null else o.getString("posterUrl"),
+                backdropUrl = if (o.isNull("backdropUrl")) null else o.getString("backdropUrl"),
                 releaseDate = o.getString("releaseDate"),
                 voteAverage = o.getDouble("voteAverage"),
                 voteCount = o.getInt("voteCount"),

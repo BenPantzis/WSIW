@@ -144,7 +144,7 @@ Two product flavors are configured — `dev` and `prod` — both pointing at the
 ./gradlew testDebugUnitTest
 ```
 
-Unit tests cover all five feature ViewModels plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
+Unit tests cover all five feature ViewModels, Room DAO integration tests for all four DAOs, plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
 
 | Test class | Coverage |
 |---|---|
@@ -153,5 +153,11 @@ Unit tests cover all five feature ViewModels plus screenshot tests for the Home 
 | `SearchViewModelTest` | Initial empty state, immediate stale-result clearing on query change, blank-query guard, 300 ms debounce timing, error state |
 | `WatchlistViewModelTest` | Watchlist population, ratings map, view mode restored from DataStore on init, grid↔list toggle with persistence, sort selection, `RemoveMovie` use-case args and snackbar event, unknown-id no-op guard, `UndoRemove` re-adds the movie |
 | `DetailViewModelTest` | Load success/error (with and without cached movie), retry triggers second load, `isWatchlisted` flow, `ToggleWatchlist` auth-gating and correct flag, `userRating` flow, `ShowRatingDialog` auth-gating, dismiss dialog, `RateMovie` fires event and calls use case, `RemoveRating` delegates to use-case remove |
+| `WatchlistDaoTest` | Insert/replace, ordering by `addedAt` DESC, `isWatchlisted` Flow reactivity, `deleteById` row count, `deleteAll`, nullable URL round-trip, Flow emits on write |
+| `PopularMovieCacheDaoTest` | `insertAll` then `getByPage`, page isolation, replace semantics, `deleteByPage` row count and cross-page safety, Flow emits on write |
+| `MovieDetailCacheDaoTest` | Insert/replace, `getById` reactivity on delete, genre pipe-delimiter round-trip, cast JSON round-trip (including `null` `profileUrl`), `similarMovies` JSON round-trip (including `null` image URLs), nullable column fields |
+| `RatingDaoTest` | Upsert, upsert-replace, `getRating` Flow reactivity on update and delete, `getAll`, `insertAll`, `deleteAll` |
+
+**Note:** The DAO tests caught a production bug in `Converters.kt` — nullable String fields inside JSON arrays (`posterUrl`, `backdropUrl`, `profileUrl`) were being deserialized as the string `"null"` rather than `null` due to `optString` behaviour on `JSONObject.NULL`. Fixed alongside the test addition.
 
 `DetailViewModelTest` uses a `@Before` stub pattern — all neutral defaults are set once; individual tests override only the stubs they need, keeping each test focused on a single behaviour. The `Context` mock is satisfied by `fakeMovieDetail(posterUrl = null)`, which causes the palette extraction to short-circuit before any real Coil call.
