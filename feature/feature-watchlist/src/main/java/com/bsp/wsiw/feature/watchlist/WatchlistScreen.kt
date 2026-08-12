@@ -48,6 +48,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -329,7 +332,7 @@ private fun WatchlistList(
                 userRating = uiState.ratings[movie.id],
                 onClick = { onMovieClick(movie.id) },
                 onRemove = { onAction(WatchlistAction.RemoveMovie(movie.id)) },
-                modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
+                modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = null),
             )
         }
     }
@@ -343,10 +346,14 @@ private fun WatchlistListItem(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scope = rememberCoroutineScope()
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.35f },
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) { onRemove(); true } else false
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                scope.launch { delay(350); onRemove() }
+                true
+            } else false
         },
     )
     SwipeToDismissBox(
