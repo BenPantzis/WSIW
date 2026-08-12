@@ -428,7 +428,7 @@ private fun WatchlistListItem(
                         )
                         if (userRating != null) {
                             Text(
-                                text = stringResource(R.string.watchlist_your_rating, "★".repeat((userRating / 2f).roundToInt())),
+                                text = "★ ${(userRating / 2f).roundToInt()}",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = GoldDefault,
                             )
