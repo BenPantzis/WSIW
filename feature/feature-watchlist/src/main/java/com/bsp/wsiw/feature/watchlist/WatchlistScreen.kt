@@ -339,12 +339,11 @@ private fun WatchlistListItem(
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.35f },
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) onRemove()
+            false  // keep state at Settled so rememberSaveable never stores EndToStart
+        },
     )
-    LaunchedEffect(dismissState.currentValue) {
-        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            onRemove()
-        }
-    }
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = false,
