@@ -488,7 +488,7 @@ private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.cd_back),
-                tint = MaterialTheme.colorScheme.surface,
+                tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )
         }

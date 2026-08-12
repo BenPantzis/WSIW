@@ -335,9 +335,9 @@ private enum class Tab(
     val icon: ImageVector,
 ) {
     Discover(HomeKey, "Movies", Icons.Default.Home),
+    Tv(TvKey, "TV", Icons.Default.PlayArrow),
     Search(SearchKey, "Search", Icons.Default.Search),
     Watchlist(WatchlistKey, "Watchlist", Icons.Default.Favorite),
-    Tv(TvKey, "TV", Icons.Default.PlayArrow),
     Profile(ProfileKey, "Profile", Icons.Default.Person),
 }
 
