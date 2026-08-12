@@ -9,4 +9,5 @@ data class Movie(
     val releaseDate: String,
     val voteAverage: Double,
     val voteCount: Int,
+    val addedAt: Long = 0L,
 )

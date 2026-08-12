@@ -81,6 +81,7 @@ private fun WatchlistEntity.toMovie() = Movie(
     releaseDate = releaseDate,
     voteAverage = voteAverage,
     voteCount = voteCount,
+    addedAt = addedAt,
 )
 
 private fun Movie.toEntity() = WatchlistEntity(
@@ -92,6 +93,7 @@ private fun Movie.toEntity() = WatchlistEntity(
     releaseDate = releaseDate,
     voteAverage = voteAverage,
     voteCount = voteCount,
+    addedAt = if (addedAt > 0L) addedAt else System.currentTimeMillis(),
 )
 
 private fun MovieDto.toWatchlistEntity(addedAt: Long) = WatchlistEntity(
