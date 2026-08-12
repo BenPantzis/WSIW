@@ -1,6 +1,7 @@
 package com.bsp.wsiw.feature.tv
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
@@ -280,6 +281,7 @@ private fun TvGrid(
                 title = show.name,
                 voteAverage = show.voteAverage,
                 onClick = { onShowClick(show.id) },
+                modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
             )
         }
         if (isLoadingMore) {

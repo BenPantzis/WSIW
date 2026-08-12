@@ -1,5 +1,6 @@
 package com.bsp.wsiw.feature.watchlist
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import com.bsp.wsiw.core.ui.theme.GoldDefault
 import androidx.compose.foundation.layout.Arrangement
@@ -230,6 +231,7 @@ private fun WatchlistGrid(
                 userRating = uiState.ratings[movie.id],
                 onClick = { onMovieClick(movie.id) },
                 onRemove = { onAction(WatchlistAction.RemoveMovie(movie.id)) },
+                modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
             )
         }
     }
@@ -241,12 +243,14 @@ private fun WatchlistPosterCard(
     userRating: Float?,
     onClick: () -> Unit,
     onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     MoviePosterCard(
         posterUrl = movie.posterUrl,
         title = movie.title,
         voteAverage = movie.voteAverage,
         onClick = onClick,
+        modifier = modifier,
         overlayContent = {
             IconButton(
                 onClick = onRemove,
@@ -325,6 +329,7 @@ private fun WatchlistList(
                 userRating = uiState.ratings[movie.id],
                 onClick = { onMovieClick(movie.id) },
                 onRemove = { onAction(WatchlistAction.RemoveMovie(movie.id)) },
+                modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
             )
         }
     }
@@ -336,6 +341,7 @@ private fun WatchlistListItem(
     userRating: Float?,
     onClick: () -> Unit,
     onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.35f },
@@ -347,6 +353,7 @@ private fun WatchlistListItem(
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = false,
+        modifier = modifier,
         backgroundContent = {
             Box(
                 contentAlignment = Alignment.CenterEnd,

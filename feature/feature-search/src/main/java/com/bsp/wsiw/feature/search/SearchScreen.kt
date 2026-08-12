@@ -1,5 +1,6 @@
 package com.bsp.wsiw.feature.search
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -190,12 +191,14 @@ private fun MixedResultsList(
                     title = result.movie.title,
                     voteAverage = result.movie.voteAverage,
                     onClick = { onMovieClick(result.movie.id) },
+                    modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
                 )
                 is SearchResult.TvResult -> MoviePosterCard(
                     posterUrl = result.show.posterUrl,
                     title = result.show.name,
                     voteAverage = result.show.voteAverage,
                     onClick = { onTvShowClick(result.show.id) },
+                    modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
                 )
                 else -> Unit
             }
@@ -219,7 +222,11 @@ private fun PeopleSection(
         )
         LazyColumn(modifier = Modifier.height((people.size * 64).coerceAtMost(192).dp)) {
             items(people, key = { it.id }) { person ->
-                PersonRow(person = person, onClick = { onPersonClick(person.id) })
+                PersonRow(
+                    person = person,
+                    onClick = { onPersonClick(person.id) },
+                    modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
+                )
             }
         }
     }
@@ -368,6 +375,7 @@ private fun TrendingIdleState(
                     title = movie.title,
                     voteAverage = movie.voteAverage,
                     onClick = { onMovieClick(movie.id) },
+                    modifier = Modifier.animateItem(fadeInSpec = tween(300), fadeOutSpec = tween(200)),
                 )
             }
         }
