@@ -3,7 +3,7 @@ package com.bsp.wsiw.feature.search
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.repository.MovieRepository
-import com.bsp.wsiw.core.domain.usecase.SearchMoviesUseCase
+import com.bsp.wsiw.core.domain.usecase.MultiSearchUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -21,7 +21,7 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchMovies: SearchMoviesUseCase,
+    private val multiSearch: MultiSearchUseCase,
     private val movieRepository: MovieRepository,
 ) : BaseViewModel<SearchAction, SearchEvent, SearchUiState>(
     initialState = SearchUiState(),
@@ -37,10 +37,10 @@ class SearchViewModel @Inject constructor(
                     if (query.isBlank()) {
                         flowOf(SearchUiState(query = query))
                     } else {
-                        searchMovies(query).map { result ->
+                        multiSearch(query).map { result ->
                             when (result) {
                                 Result.Loading -> SearchUiState(query = query, isLoading = true)
-                                is Result.Success -> SearchUiState(query = query, movies = result.data)
+                                is Result.Success -> SearchUiState(query = query, results = result.data)
                                 is Result.Error -> SearchUiState(
                                     query = query,
                                     error = UiText.StringResource(CoreUiR.string.error_something_went_wrong),
@@ -53,7 +53,7 @@ class SearchViewModel @Inject constructor(
                     updateState {
                         copy(
                             isLoading = searchResult.isLoading,
-                            movies = searchResult.movies,
+                            results = searchResult.results,
                             error = searchResult.error,
                         )
                     }
@@ -64,11 +64,11 @@ class SearchViewModel @Inject constructor(
     override fun handleAction(action: SearchAction) {
         when (action) {
             is SearchAction.UpdateQuery -> {
-                updateState { copy(query = action.query, isLoading = false, movies = emptyList(), error = null) }
+                updateState { copy(query = action.query, isLoading = false, results = emptyList(), error = null) }
                 _query.value = action.query
             }
             SearchAction.ClearQuery -> {
-                updateState { copy(query = "", isLoading = false, movies = emptyList(), error = null) }
+                updateState { copy(query = "", isLoading = false, results = emptyList(), error = null) }
                 _query.value = ""
             }
         }

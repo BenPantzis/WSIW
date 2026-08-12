@@ -6,12 +6,16 @@ import com.bsp.wsiw.core.data.util.networkBoundResource
 import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
+import com.bsp.wsiw.core.domain.model.DiscoverFilter
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.PersonDetail
+import com.bsp.wsiw.core.domain.model.PersonSummary
 import com.bsp.wsiw.core.domain.model.Review
+import com.bsp.wsiw.core.domain.model.SearchResult
+import com.bsp.wsiw.core.domain.model.TvShow
 import com.bsp.wsiw.core.domain.model.WatchProvider
 import com.bsp.wsiw.core.domain.model.WatchProviders
 import com.bsp.wsiw.core.domain.repository.MovieRepository
@@ -65,15 +69,61 @@ class MovieRepositoryImpl @Inject constructor(
         emit(safeApiCall { apiService.getGenres().genres.map { Genre(id = it.id, name = it.name) } })
     }
 
-    override fun discoverMovies(genreId: Int, page: Int): Flow<Result<PagedResult<Movie>>> = flow {
+    override fun discoverMovies(genreId: Int?, filter: DiscoverFilter, page: Int): Flow<Result<PagedResult<Movie>>> = flow {
         emit(safeApiCall {
-            val response = apiService.discoverMovies(genreId, page)
+            val minVoteCount = if (filter.sortBy == com.bsp.wsiw.core.domain.model.SortBy.Rating) 100 else null
+            val response = apiService.discoverMovies(
+                genreId = genreId,
+                sortBy = filter.sortBy.apiValue,
+                minRating = filter.minRating,
+                year = filter.year,
+                minVoteCount = minVoteCount,
+                page = page,
+            )
             PagedResult(items = response.results.map { it.toDomain() }, totalPages = response.totalPages)
         })
     }
 
-    override fun searchMovies(query: String, page: Int): Flow<Result<List<Movie>>> = flow {
-        emit(safeApiCall { apiService.searchMovies(query, page).results.map { it.toDomain() } })
+    override fun multiSearch(query: String, page: Int): Flow<Result<List<SearchResult>>> = flow {
+        emit(safeApiCall {
+            apiService.searchMulti(query, page).results.mapNotNull { item ->
+                when (item.mediaType) {
+                    "movie" -> SearchResult.MovieResult(
+                        Movie(
+                            id = item.id,
+                            title = item.title ?: return@mapNotNull null,
+                            overview = item.overview ?: "",
+                            posterUrl = item.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" },
+                            backdropUrl = item.backdropPath?.let { "https://image.tmdb.org/t/p/w1280$it" },
+                            releaseDate = item.releaseDate ?: "",
+                            voteAverage = item.voteAverage ?: 0.0,
+                            voteCount = 0,
+                        )
+                    )
+                    "tv" -> SearchResult.TvResult(
+                        TvShow(
+                            id = item.id,
+                            name = item.name ?: return@mapNotNull null,
+                            overview = item.overview ?: "",
+                            posterUrl = item.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" },
+                            backdropUrl = item.backdropPath?.let { "https://image.tmdb.org/t/p/w1280$it" },
+                            firstAirDate = item.firstAirDate,
+                            voteAverage = item.voteAverage ?: 0.0,
+                            genreIds = item.genreIds ?: emptyList(),
+                        )
+                    )
+                    "person" -> SearchResult.PersonResult(
+                        PersonSummary(
+                            id = item.id,
+                            name = item.name ?: return@mapNotNull null,
+                            profileUrl = item.profilePath?.let { "https://image.tmdb.org/t/p/w185$it" },
+                            knownForDepartment = item.knownForDepartment,
+                        )
+                    )
+                    else -> null
+                }
+            }
+        })
     }
 
     override fun getPersonDetail(personId: Int): Flow<Result<PersonDetail>> = flow {

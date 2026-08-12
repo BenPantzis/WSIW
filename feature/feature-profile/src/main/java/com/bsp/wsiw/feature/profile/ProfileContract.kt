@@ -24,7 +24,6 @@ data class ProfileUiState(
     val watchlistCount: Int = 0,
     val ratingsCount: Int = 0,
     val averageRating: Float? = null,
-    val favoriteCount: Int = 0,
     val ratedMovies: List<Pair<Movie, Float>> = emptyList(),
 ) {
     val isAwaitingApproval get() = pendingRequestToken != null && !isSigningIn

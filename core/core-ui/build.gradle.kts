@@ -22,6 +22,8 @@ dependencies {
     api(catalog.findLibrary("androidx-compose-material3").get())
     debugImplementation(catalog.findLibrary("androidx-compose-ui-tooling").get())
 
+    api(project(":core:core-common"))
+
     implementation(catalog.findLibrary("coil-compose").get())
     api(catalog.findLibrary("timber").get())
 }

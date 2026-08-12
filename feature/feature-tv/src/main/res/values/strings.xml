@@ -1,0 +1,18 @@
+<resources>
+    <string name="tv_category_trending">Trending</string>
+    <string name="tv_category_popular">Popular</string>
+    <string name="tv_category_top_rated">Top Rated</string>
+    <string name="tv_category_on_the_air">On the Air</string>
+    <string name="tv_category_airing_today">Airing Today</string>
+    <string name="tv_category_by_genre">By Genre</string>
+    <string name="tv_detail_seasons">Seasons</string>
+    <string name="tv_detail_status">Status</string>
+    <string name="tv_detail_network">Network</string>
+    <string name="tv_detail_similar">Similar Shows</string>
+    <string name="tv_detail_recommended">Recommended</string>
+    <string name="tv_detail_cast">Cast</string>
+    <string name="tv_detail_trailer">Watch Trailer</string>
+    <string name="tv_seasons_count">%d Season</string>
+    <string name="tv_seasons_count_plural">%d Seasons</string>
+    <string name="error_refresh_cached">Couldn\'t refresh — showing cached data</string>
+</resources>

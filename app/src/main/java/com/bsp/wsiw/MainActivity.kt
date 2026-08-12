@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -71,6 +72,10 @@ import com.bsp.wsiw.feature.profile.navigation.profileDestination
 import com.bsp.wsiw.feature.profile.navigation.ratedMoviesDestination
 import com.bsp.wsiw.feature.search.navigation.SearchKey
 import com.bsp.wsiw.feature.search.navigation.searchDestination
+import com.bsp.wsiw.feature.tv.navigation.TvDetailKey
+import com.bsp.wsiw.feature.tv.navigation.TvKey
+import com.bsp.wsiw.feature.tv.navigation.tvDetailDestination
+import com.bsp.wsiw.feature.tv.navigation.tvListDestination
 import com.bsp.wsiw.feature.watchlist.navigation.WatchlistKey
 import com.bsp.wsiw.feature.watchlist.navigation.watchlistDestination
 import dagger.hilt.android.AndroidEntryPoint
@@ -193,7 +198,7 @@ private fun WsiwApp(
     val showBottomBar by remember {
         derivedStateOf {
             currentKey.let {
-                it is HomeKey || it is SearchKey || it is WatchlistKey || it is ProfileKey
+                it is HomeKey || it is SearchKey || it is WatchlistKey || it is TvKey || it is ProfileKey
             }
         }
     }
@@ -222,6 +227,10 @@ private fun WsiwApp(
         backStack.add(ReviewsKey(movieId, movieTitle))
     }
 
+    fun navigateToTvDetail(seriesId: Int) {
+        backStack.add(TvDetailKey(seriesId))
+    }
+
     fun navigateToRatedMovies() {
         backStack.add(RatedMoviesKey)
     }
@@ -246,7 +255,7 @@ private fun WsiwApp(
             onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 if (targetState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
                     }) {
                     (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
                 } else {
@@ -255,7 +264,7 @@ private fun WsiwApp(
             },
             popTransitionSpec = {
                 if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
                     }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {
@@ -264,7 +273,7 @@ private fun WsiwApp(
             },
             predictivePopTransitionSpec = {
                 if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it is RatedMoviesKey
+                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
                     }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {
@@ -277,7 +286,11 @@ private fun WsiwApp(
             ),
             entryProvider = entryProvider {
                 homeDestination(onMovieClick = ::navigateToDetail)
-                searchDestination(onMovieClick = ::navigateToDetail)
+                searchDestination(
+                    onMovieClick = ::navigateToDetail,
+                    onPersonClick = ::navigateToPerson,
+                    onTvShowClick = ::navigateToTvDetail,
+                )
                 watchlistDestination(
                     onMovieClick = ::navigateToDetail,
                     onBrowseMovies = { navigateToTab(HomeKey) },
@@ -301,6 +314,12 @@ private fun WsiwApp(
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
                 )
+                tvListDestination(onShowClick = ::navigateToTvDetail)
+                tvDetailDestination(
+                    onBack = { backStack.removeLastOrNull() },
+                    onShowClick = ::navigateToTvDetail,
+                    onPersonClick = ::navigateToPerson,
+                )
                 reviewsDestination(onBack = { backStack.removeLastOrNull() })
             },
             modifier = Modifier
@@ -315,9 +334,10 @@ private enum class Tab(
     val label: String,
     val icon: ImageVector,
 ) {
-    Discover(HomeKey, "Discover", Icons.Default.Home),
+    Discover(HomeKey, "Movies", Icons.Default.Home),
     Search(SearchKey, "Search", Icons.Default.Search),
     Watchlist(WatchlistKey, "Watchlist", Icons.Default.Favorite),
+    Tv(TvKey, "TV", Icons.Default.PlayArrow),
     Profile(ProfileKey, "Profile", Icons.Default.Person),
 }
 

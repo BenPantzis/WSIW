@@ -3,8 +3,11 @@ package com.bsp.wsiw.core.data.remote
 import com.bsp.wsiw.core.data.remote.model.GenreListResponseDto
 import com.bsp.wsiw.core.data.remote.model.MovieDetailDto
 import com.bsp.wsiw.core.data.remote.model.MovieListResponseDto
+import com.bsp.wsiw.core.data.remote.model.MultiSearchResponseDto
 import com.bsp.wsiw.core.data.remote.model.PersonDetailDto
 import com.bsp.wsiw.core.data.remote.model.ReviewListResponseDto
+import com.bsp.wsiw.core.data.remote.model.TvDetailDto
+import com.bsp.wsiw.core.data.remote.model.TvListResponseDto
 import com.bsp.wsiw.core.data.remote.model.WatchProvidersResponseDto
 import com.bsp.wsiw.core.data.remote.model.RatingBody
 import com.bsp.wsiw.core.data.remote.model.WatchlistUpdateBody
@@ -55,17 +58,76 @@ interface TmdbApiService {
 
     @GET("discover/movie")
     suspend fun discoverMovies(
-        @Query("with_genres") genreId: Int,
+        @Query("with_genres") genreId: Int?,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("vote_average.gte") minRating: Float? = null,
+        @Query("primary_release_year") year: Int? = null,
+        @Query("vote_count.gte") minVoteCount: Int? = null,
         @Query("page") page: Int = 1,
         @Query("language") language: String = "en-US",
     ): MovieListResponseDto
 
-    @GET("search/movie")
-    suspend fun searchMovies(
+    @GET("search/multi")
+    suspend fun searchMulti(
         @Query("query") query: String,
         @Query("page") page: Int = 1,
         @Query("language") language: String = "en-US",
-    ): MovieListResponseDto
+    ): MultiSearchResponseDto
+
+    // --- TV ---
+
+    @GET("trending/tv/week")
+    suspend fun getTrendingTv(
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("tv/popular")
+    suspend fun getPopularTv(
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("tv/top_rated")
+    suspend fun getTopRatedTv(
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("tv/on_the_air")
+    suspend fun getOnTheAirTv(
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("tv/airing_today")
+    suspend fun getAiringTodayTv(
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("genre/tv/list")
+    suspend fun getTvGenres(
+        @Query("language") language: String = "en-US",
+    ): GenreListResponseDto
+
+    @GET("discover/tv")
+    suspend fun discoverTv(
+        @Query("with_genres") genreId: Int?,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("vote_average.gte") minRating: Float? = null,
+        @Query("first_air_date_year") year: Int? = null,
+        @Query("vote_count.gte") minVoteCount: Int? = null,
+        @Query("page") page: Int = 1,
+        @Query("language") language: String = "en-US",
+    ): TvListResponseDto
+
+    @GET("tv/{seriesId}")
+    suspend fun getTvDetail(
+        @Path("seriesId") seriesId: Int,
+        @Query("language") language: String = "en-US",
+        @Query("append_to_response") appendToResponse: String = "aggregate_credits,content_ratings,similar,recommendations,videos",
+    ): TvDetailDto
 
     @GET("person/{personId}")
     suspend fun getPersonDetail(

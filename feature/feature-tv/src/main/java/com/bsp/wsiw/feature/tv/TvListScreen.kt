@@ -1,4 +1,4 @@
-package com.bsp.wsiw.feature.home
+package com.bsp.wsiw.feature.tv
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -47,8 +47,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.DiscoverFilter
 import com.bsp.wsiw.core.domain.model.Genre
-import com.bsp.wsiw.core.domain.model.Movie
 import com.bsp.wsiw.core.domain.model.SortBy
+import com.bsp.wsiw.core.domain.model.TvShow
 import com.bsp.wsiw.core.ui.component.ErrorContent
 import com.bsp.wsiw.core.ui.component.FilterBottomSheet
 import com.bsp.wsiw.core.ui.component.FilterSheetState
@@ -60,9 +60,9 @@ import com.bsp.wsiw.core.ui.theme.AppTheme
 import com.bsp.wsiw.core.ui.R as CoreUiR
 
 @Composable
-fun HomeScreen(
-    onMovieClick: (Int) -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel(),
+fun TvListScreen(
+    onShowClick: (Int) -> Unit,
+    viewModel: TvListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -71,15 +71,15 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is HomeEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message.resolve(context))
+                is TvListEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message.resolve(context))
             }
         }
     }
 
-    HomeContent(
+    TvListContent(
         uiState = uiState,
         onAction = viewModel::onAction,
-        onMovieClick = onMovieClick,
+        onShowClick = onShowClick,
         snackbarHostState = snackbarHostState,
     )
 
@@ -87,18 +87,18 @@ fun HomeScreen(
         val sortOptions = SortBy.entries.map { it.toSortOption() }
         FilterBottomSheet(
             state = uiState.filter.toFilterSheetState(sortOptions),
-            onApply = { viewModel.onAction(HomeAction.ApplyFilter(it.toDiscoverFilter())) },
-            onReset = { viewModel.onAction(HomeAction.ApplyFilter(DiscoverFilter())) },
-            onDismiss = { viewModel.onAction(HomeAction.DismissFilterSheet) },
+            onApply = { viewModel.onAction(TvListAction.ApplyFilter(it.toDiscoverFilter())) },
+            onReset = { viewModel.onAction(TvListAction.ApplyFilter(DiscoverFilter())) },
+            onDismiss = { viewModel.onAction(TvListAction.DismissFilterSheet) },
         )
     }
 }
 
 @Composable
-internal fun HomeContent(
-    uiState: HomeUiState,
-    onAction: (HomeAction) -> Unit,
-    onMovieClick: (Int) -> Unit = {},
+internal fun TvListContent(
+    uiState: TvListUiState,
+    onAction: (TvListAction) -> Unit,
+    onShowClick: (Int) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     ScreenScaffold(snackbarHostState = snackbarHostState) { padding, _ ->
@@ -109,7 +109,7 @@ internal fun HomeContent(
             ) {
                 CategoryChipRow(
                     selected = uiState.selectedCategory,
-                    onSelect = { onAction(HomeAction.SelectCategory(it)) },
+                    onSelect = { onAction(TvListAction.SelectCategory(it)) },
                     modifier = Modifier.weight(1f),
                 )
                 val activeCount = uiState.filter.activeCount
@@ -120,10 +120,10 @@ internal fun HomeContent(
                     },
                     modifier = Modifier.padding(end = AppTheme.spacing.sm),
                 ) {
-                    IconButton(onClick = { onAction(HomeAction.OpenFilterSheet) }) {
+                    IconButton(onClick = { onAction(TvListAction.OpenFilterSheet) }) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
-                            contentDescription = stringResource(CoreUiR.string.filter_title),
+                            contentDescription = null,
                             tint = if (activeCount > 0) MaterialTheme.colorScheme.primary
                                    else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -131,38 +131,36 @@ internal fun HomeContent(
                 }
             }
             AnimatedVisibility(
-                visible = uiState.selectedCategory == HomeCategory.ByGenre && uiState.genres.isNotEmpty(),
+                visible = uiState.selectedCategory == TvCategory.ByGenre && uiState.genres.isNotEmpty(),
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
                 GenreChipRow(
                     genres = uiState.genres,
                     selectedGenreId = uiState.selectedGenreId,
-                    onSelect = { onAction(HomeAction.SelectGenre(it)) },
+                    onSelect = { onAction(TvListAction.SelectGenre(it)) },
                 )
             }
             when {
-                uiState.isLoading -> ShimmerMovieGrid(
-                    contentPadding = PaddingValues(bottom = padding.calculateBottomPadding()),
-                )
+                uiState.isLoading -> ShimmerGrid(PaddingValues(bottom = padding.calculateBottomPadding()))
                 uiState.error != null -> ErrorContent(
                     message = uiState.error!!.asString(),
-                    onRetry = { onAction(HomeAction.Retry) },
+                    onRetry = { onAction(TvListAction.Retry) },
                     modifier = Modifier
                         .weight(1f)
                         .padding(bottom = padding.calculateBottomPadding()),
                 )
                 else -> @OptIn(ExperimentalMaterial3Api::class) PullToRefreshBox(
                     isRefreshing = uiState.isPullRefreshing,
-                    onRefresh = { onAction(HomeAction.Refresh) },
+                    onRefresh = { onAction(TvListAction.Refresh) },
                     modifier = Modifier.weight(1f),
                 ) {
-                    MovieGrid(
-                        movies = uiState.movies,
+                    TvGrid(
+                        shows = uiState.shows,
                         isLoadingMore = uiState.isLoadingMore,
                         canLoadMore = uiState.canLoadMore,
-                        onMovieClick = onMovieClick,
-                        onLoadMore = { onAction(HomeAction.LoadNextPage) },
+                        onShowClick = onShowClick,
+                        onLoadMore = { onAction(TvListAction.LoadNextPage) },
                         bottomPadding = padding.calculateBottomPadding(),
                     )
                     if (uiState.isRefreshing) {
@@ -180,12 +178,10 @@ internal fun HomeContent(
     }
 }
 
-// --- Category chips ---
-
 @Composable
 private fun CategoryChipRow(
-    selected: HomeCategory,
-    onSelect: (HomeCategory) -> Unit,
+    selected: TvCategory,
+    onSelect: (TvCategory) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = AppTheme.spacing
@@ -194,7 +190,7 @@ private fun CategoryChipRow(
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = modifier,
     ) {
-        items(HomeCategory.entries) { category ->
+        items(TvCategory.entries) { category ->
             FilterChip(
                 selected = category == selected,
                 onClick = { onSelect(category) },
@@ -227,20 +223,13 @@ private fun GenreChipRow(
     }
 }
 
-// --- Shimmer skeleton ---
-
 @Composable
-private fun ShimmerMovieGrid(
-    contentPadding: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
+private fun ShimmerGrid(contentPadding: PaddingValues, modifier: Modifier = Modifier) {
     val spacing = AppTheme.spacing
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         contentPadding = PaddingValues(
-            start = spacing.md,
-            end = spacing.md,
-            top = spacing.md,
+            start = spacing.md, end = spacing.md, top = spacing.md,
             bottom = contentPadding.calculateBottomPadding() + spacing.md,
         ),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
@@ -252,14 +241,12 @@ private fun ShimmerMovieGrid(
     }
 }
 
-// --- Real movie grid ---
-
 @Composable
-private fun MovieGrid(
-    movies: List<Movie>,
+private fun TvGrid(
+    shows: List<TvShow>,
     isLoadingMore: Boolean,
     canLoadMore: Boolean,
-    onMovieClick: (Int) -> Unit,
+    onShowClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
@@ -274,29 +261,25 @@ private fun MovieGrid(
             canLoadMore && total > 0 && lastVisible >= total - 4
         }
     }
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) onLoadMore()
-    }
+    LaunchedEffect(shouldLoadMore) { if (shouldLoadMore) onLoadMore() }
 
     LazyVerticalGrid(
         state = gridState,
         columns = GridCells.Adaptive(minSize = 160.dp),
         contentPadding = PaddingValues(
-            start = spacing.md,
-            end = spacing.md,
-            top = spacing.md,
+            start = spacing.md, end = spacing.md, top = spacing.md,
             bottom = bottomPadding + spacing.md,
         ),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
         modifier = modifier.fillMaxSize(),
     ) {
-        items(movies, key = { it.id }) { movie ->
+        items(shows, key = { it.id }) { show ->
             MoviePosterCard(
-                posterUrl = movie.posterUrl,
-                title = movie.title,
-                voteAverage = movie.voteAverage,
-                onClick = { onMovieClick(movie.id) },
+                posterUrl = show.posterUrl,
+                title = show.name,
+                voteAverage = show.voteAverage,
+                onClick = { onShowClick(show.id) },
             )
         }
         if (isLoadingMore) {
@@ -307,11 +290,7 @@ private fun MovieGrid(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.padding(4.dp),
-                    )
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.padding(4.dp))
                 }
             }
         }

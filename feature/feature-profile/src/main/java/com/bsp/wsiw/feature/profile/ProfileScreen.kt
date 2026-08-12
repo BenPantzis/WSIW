@@ -80,7 +80,6 @@ fun ProfileScreen(
                 watchlistCount = state.watchlistCount,
                 ratingsCount = state.ratingsCount,
                 averageRating = state.averageRating,
-                favoriteCount = state.favoriteCount,
                 ratedMovies = state.ratedMovies,
                 onSeeAllRatings = onSeeAllRatings,
                 onSignOut = { viewModel.onAction(ProfileAction.SignOut) },
@@ -107,7 +106,6 @@ private fun AuthenticatedContent(
     watchlistCount: Int,
     ratingsCount: Int,
     averageRating: Float?,
-    favoriteCount: Int,
     ratedMovies: List<Pair<Movie, Float>>,
     onSeeAllRatings: () -> Unit,
     onSignOut: () -> Unit,
@@ -158,11 +156,6 @@ private fun AuthenticatedContent(
             StatChip(
                 label = stringResource(R.string.profile_stats_avg_rating),
                 value = averageRating?.let { "%.1f".format(it) } ?: "—",
-                modifier = Modifier.weight(1f),
-            )
-            StatChip(
-                label = stringResource(R.string.profile_stats_favorites),
-                value = "$favoriteCount",
                 modifier = Modifier.weight(1f),
             )
         }

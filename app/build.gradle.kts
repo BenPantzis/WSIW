@@ -61,6 +61,7 @@ dependencies {
     implementation(project(":feature:feature-search"))
     implementation(project(":feature:feature-watchlist"))
     implementation(project(":feature:feature-profile"))
+    implementation(project(":feature:feature-tv"))
 
     implementation(catalog.findLibrary("androidx-navigation3-ui").get())
 

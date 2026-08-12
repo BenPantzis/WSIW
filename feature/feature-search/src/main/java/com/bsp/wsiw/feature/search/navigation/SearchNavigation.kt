@@ -10,6 +10,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object SearchKey : NavKey
 
-fun EntryProviderScope<NavKey>.searchDestination(onMovieClick: (Int) -> Unit) {
-    entry<SearchKey> { SearchScreen(onMovieClick = onMovieClick) }
+fun EntryProviderScope<NavKey>.searchDestination(
+    onMovieClick: (Int) -> Unit,
+    onPersonClick: (Int) -> Unit,
+    onTvShowClick: (Int) -> Unit,
+) {
+    entry<SearchKey> {
+        SearchScreen(
+            onMovieClick = onMovieClick,
+            onPersonClick = onPersonClick,
+            onTvShowClick = onTvShowClick,
+        )
+    }
 }

@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.domain.repository.AuthRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.usecase.GetAllRatingsUseCase
-import com.bsp.wsiw.core.domain.usecase.GetFavoriteCountUseCase
 import com.bsp.wsiw.core.domain.usecase.GetLocalRatedMoviesUseCase
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
@@ -22,7 +21,6 @@ class ProfileViewModel @Inject constructor(
     private val getWatchlist: GetWatchlistUseCase,
     private val getAllRatings: GetAllRatingsUseCase,
     private val getLocalRatedMovies: GetLocalRatedMoviesUseCase,
-    private val getFavoriteCount: GetFavoriteCountUseCase,
 ) : BaseViewModel<ProfileAction, ProfileEvent, ProfileUiState>(
     initialState = ProfileUiState(),
 ) {
@@ -64,21 +62,6 @@ class ProfileViewModel @Inject constructor(
             getLocalRatedMovies().collect { movies ->
                 updateState { copy(ratedMovies = movies) }
             }
-        }
-
-        viewModelScope.launch {
-            sessionRepository.accountId.collect { accountId ->
-                if (accountId != null) loadFavoriteCount(accountId)
-            }
-        }
-    }
-
-    private fun loadFavoriteCount(accountId: Int) {
-        viewModelScope.launch {
-            try {
-                val count = getFavoriteCount(accountId)
-                updateState { copy(favoriteCount = count) }
-            } catch (_: Exception) { }
         }
     }
 

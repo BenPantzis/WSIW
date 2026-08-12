@@ -1,22 +1,16 @@
-﻿import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.artifacts.VersionCatalogsExtension
 
 plugins {
     id("template.android.library")
     id("template.android.compose")
     id("template.android.hilt")
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.roborazzi)
 }
 
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 android {
-    namespace = "com.bsp.wsiw.feature.home"
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
+    namespace = "com.bsp.wsiw.feature.tv"
 }
 
 dependencies {
@@ -32,12 +26,5 @@ dependencies {
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
     implementation("androidx.compose.material:material-icons-extended")
-
-    testImplementation(project(":core:core-testing"))
-    testImplementation(catalog.findLibrary("robolectric").get())
-    testImplementation(catalog.findLibrary("roborazzi").get())
-    testImplementation(catalog.findLibrary("roborazzi-compose").get())
-    testImplementation(catalog.findLibrary("roborazzi-rule").get())
-    testImplementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    testImplementation(catalog.findLibrary("androidx-compose-ui-test-junit4").get())
+    implementation(catalog.findLibrary("coil-compose").get())
 }
