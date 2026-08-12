@@ -57,6 +57,9 @@ class WatchlistViewModel @Inject constructor(
                 }
             }
             is WatchlistAction.UndoRemove -> {
+                updateState {
+                    copy(undoVersions = undoVersions + (action.movie.id to (undoVersions[action.movie.id] ?: 0) + 1))
+                }
                 viewModelScope.launch { toggleWatchlist(action.movie, isWatchlisted = false) }
             }
             is WatchlistAction.SelectSort -> updateState { copy(sort = action.sort) }

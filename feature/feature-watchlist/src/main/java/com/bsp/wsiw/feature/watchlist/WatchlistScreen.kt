@@ -323,7 +323,7 @@ private fun WatchlistList(
                 onAction = onAction,
             )
         }
-        items(uiState.sortedMovies, key = { it.id }) { movie ->
+        items(uiState.sortedMovies, key = { "${it.id}_${uiState.undoVersions[it.id] ?: 0}" }) { movie ->
             WatchlistListItem(
                 movie = movie,
                 userRating = uiState.ratings[movie.id],
@@ -346,8 +346,7 @@ private fun WatchlistListItem(
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.35f },
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) onRemove()
-            false  // keep state at Settled so rememberSaveable never stores EndToStart
+            if (value == SwipeToDismissBoxValue.EndToStart) { onRemove(); true } else false
         },
     )
     SwipeToDismissBox(

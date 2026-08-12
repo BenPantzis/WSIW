@@ -29,6 +29,7 @@ data class WatchlistUiState(
     val sort: WatchlistSort = WatchlistSort.DateAdded,
     val viewMode: WatchlistViewMode = WatchlistViewMode.Grid,
     val ratings: Map<Int, Float> = emptyMap(),
+    val undoVersions: Map<Int, Int> = emptyMap(),
 ) {
     val sortedMovies: List<Movie> get() = when (sort) {
         WatchlistSort.DateAdded -> movies
