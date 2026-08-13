@@ -104,6 +104,7 @@ import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.theme.GoldDefault
 import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.ErrorContent
+import com.bsp.wsiw.core.ui.component.FloatingEmojiFeedback
 import com.bsp.wsiw.core.ui.component.RemoteImage
 import com.bsp.wsiw.core.ui.component.shimmerEffect
 import com.bsp.wsiw.core.ui.theme.AppTheme
@@ -240,6 +241,8 @@ private fun CollapsingDetailContent(
     onFeedbackFinished: () -> Unit = {},
 ) {
     var chipCenterPx by remember { mutableStateOf(Offset.Zero) }
+    var bookmarkCenter by remember { mutableStateOf(Offset.Zero) }
+    var showBookmarkAnimation by remember { mutableStateOf(false) }
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
 
@@ -270,11 +273,19 @@ private fun CollapsingDetailContent(
             )
             BookmarkButton(
                 isWatchlisted = isWatchlisted,
-                onClick = onToggleWatchlist,
+                onClick = {
+                    if (!isWatchlisted) showBookmarkAnimation = true
+                    onToggleWatchlist()
+                },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
-                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg),
+                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg)
+                    .onGloballyPositioned { coords ->
+                        val topLeft = coords.localToRoot(Offset.Zero)
+                        val sz = coords.size
+                        bookmarkCenter = Offset(topLeft.x + sz.width / 2f, topLeft.y + sz.height / 2f)
+                    },
             )
             ContentList(
                 movie = movie,
@@ -290,10 +301,19 @@ private fun CollapsingDetailContent(
                 onRatingRowPositioned = { chipCenterPx = it },
             )
             if (submittedRating != null && chipCenterPx != Offset.Zero) {
-                FloatingRatingFeedback(
-                    rating = submittedRating!!,
-                    chipCenter = chipCenterPx,
+                FloatingEmojiFeedback(
+                    emoji = emojiForRating(submittedRating!!),
+                    origin = chipCenterPx,
+                    accent = LocalAccentColor.current,
                     onFinished = onFeedbackFinished,
+                )
+            }
+            if (showBookmarkAnimation && bookmarkCenter != Offset.Zero) {
+                FloatingEmojiFeedback(
+                    emoji = "❤️",
+                    origin = bookmarkCenter,
+                    accent = LocalAccentColor.current,
+                    onFinished = { showBookmarkAnimation = false },
                 )
             }
             TopBar(
@@ -1230,83 +1250,6 @@ private fun RatingBottomSheet(
     }
 }
 
-// --- Emoji rating feedback ---
-
-@Composable
-private fun FloatingRatingFeedback(
-    rating: Float,
-    chipCenter: Offset,
-    onFinished: () -> Unit,
-) {
-    val accent = LocalAccentColor.current
-    val density = LocalDensity.current
-    val emoji = emojiForRating(rating)
-
-    val scale = remember { Animatable(0f) }
-    val travelY = remember { Animatable(0f) }
-    val emojiAlpha = remember { Animatable(1f) }
-    val particleRadius = remember { Animatable(0f) }
-    val particleAlpha = remember { Animatable(1f) }
-
-    LaunchedEffect(Unit) {
-        val travelPx = with(density) { 96.dp.toPx() }
-        val particlePx = with(density) { 38.dp.toPx() }
-        launch { scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 350f)) }
-        launch { travelY.animateTo(-travelPx, tween(860, easing = FastOutSlowInEasing)) }
-        launch {
-            delay(300)
-            emojiAlpha.animateTo(0f, tween(560))
-            onFinished()
-        }
-        launch { particleRadius.animateTo(particlePx, tween(420, easing = FastOutSlowInEasing)) }
-        launch {
-            delay(70)
-            particleAlpha.animateTo(0f, tween(380))
-        }
-    }
-
-    val dotRadiusPx = with(density) { 4.dp.toPx() }
-    val emojiHalfPx = with(density) { 20.dp.toPx() }
-
-    // Particle ring — drawn during the draw phase so no recomposition on value change
-    Canvas(Modifier.fillMaxSize()) {
-        val pa = particleAlpha.value
-        val pr = particleRadius.value
-        if (pa > 0f) {
-            val color = accent.copy(alpha = pa * 0.8f)
-            repeat(8) { i ->
-                val angle = Math.toRadians(i * 45.0)
-                drawCircle(
-                    color = color,
-                    radius = dotRadiusPx,
-                    center = Offset(
-                        chipCenter.x + (pr * cos(angle)).toFloat(),
-                        chipCenter.y + (pr * sin(angle)).toFloat(),
-                    ),
-                )
-            }
-        }
-    }
-
-    // Emoji — starts at chip center, scales in with spring, floats upward, fades out
-    Text(
-        text = emoji,
-        style = MaterialTheme.typography.displaySmall,
-        modifier = Modifier
-            .absoluteOffset {
-                IntOffset(
-                    x = (chipCenter.x - emojiHalfPx).roundToInt(),
-                    y = (chipCenter.y - emojiHalfPx).roundToInt(),
-                )
-            }
-            .graphicsLayer {
-                scaleX = scale.value
-                scaleY = scale.value
-                translationY = travelY.value
-                alpha = emojiAlpha.value
-            },
-    )
-}
 
 private fun emojiForRating(rating: Float): String = when {
     rating <= 2f -> "😤"
