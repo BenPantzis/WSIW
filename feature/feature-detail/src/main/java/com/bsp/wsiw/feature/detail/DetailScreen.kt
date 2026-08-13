@@ -60,8 +60,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.cos
 import kotlin.math.sin
@@ -136,13 +134,14 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val signInRequiredMessage = stringResource(R.string.detail_sign_in_required)
     var submittedRating by remember { mutableStateOf<Float?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is DetailEvent.ShowError -> snackbarHostState.showSnackbar(event.message.resolve(context))
-                DetailEvent.SignInRequired -> snackbarHostState.showSnackbar(context.getString(R.string.detail_sign_in_required))
+                DetailEvent.SignInRequired -> snackbarHostState.showSnackbar(signInRequiredMessage)
                 is DetailEvent.RatingSubmitted -> submittedRating = event.rating
             }
         }
@@ -240,8 +239,6 @@ private fun CollapsingDetailContent(
     submittedRating: Float? = null,
     onFeedbackFinished: () -> Unit = {},
 ) {
-    var chipCenterPx by remember { mutableStateOf(Offset.Zero) }
-    var bookmarkCenter by remember { mutableStateOf(Offset.Zero) }
     var showBookmarkAnimation by remember { mutableStateOf(false) }
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -271,22 +268,6 @@ private fun CollapsingDetailContent(
                 scrollFraction = scrollFraction,
                 backdropHeightPx = backdropHeightPx,
             )
-            BookmarkButton(
-                isWatchlisted = isWatchlisted,
-                onClick = {
-                    if (!isWatchlisted) showBookmarkAnimation = true
-                    onToggleWatchlist()
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
-                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg)
-                    .onGloballyPositioned { coords ->
-                        val topLeft = coords.localToRoot(Offset.Zero)
-                        val sz = coords.size
-                        bookmarkCenter = Offset(topLeft.x + sz.width / 2f, topLeft.y + sz.height / 2f)
-                    },
-            )
             ContentList(
                 movie = movie,
                 listState = listState,
@@ -298,23 +279,30 @@ private fun CollapsingDetailContent(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
-                onRatingRowPositioned = { chipCenterPx = it },
+                submittedRating = submittedRating,
+                onFeedbackFinished = onFeedbackFinished,
             )
-            if (submittedRating != null && chipCenterPx != Offset.Zero) {
-                FloatingEmojiFeedback(
-                    emoji = emojiForRating(submittedRating!!),
-                    origin = chipCenterPx,
-                    accent = LocalAccentColor.current,
-                    onFinished = onFeedbackFinished,
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
+                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg),
+            ) {
+                BookmarkButton(
+                    isWatchlisted = isWatchlisted,
+                    onClick = {
+                        if (!isWatchlisted) showBookmarkAnimation = true
+                        onToggleWatchlist()
+                    },
                 )
-            }
-            if (showBookmarkAnimation && bookmarkCenter != Offset.Zero) {
-                FloatingEmojiFeedback(
-                    emoji = "❤️",
-                    origin = bookmarkCenter,
-                    accent = LocalAccentColor.current,
-                    onFinished = { showBookmarkAnimation = false },
-                )
+                if (showBookmarkAnimation) {
+                    FloatingEmojiFeedback(
+                        emoji = "❤️",
+                        accent = LocalAccentColor.current,
+                        onFinished = { showBookmarkAnimation = false },
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
             }
             TopBar(
                 title = movie.title,
@@ -409,7 +397,8 @@ private fun ContentList(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
-    onRatingRowPositioned: (Offset) -> Unit = {},
+    submittedRating: Float? = null,
+    onFeedbackFinished: () -> Unit = {},
 ) {
     LazyColumn(
         state = listState,
@@ -429,7 +418,8 @@ private fun ContentList(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
-                onRatingRowPositioned = onRatingRowPositioned,
+                submittedRating = submittedRating,
+                onFeedbackFinished = onFeedbackFinished,
             )
         }
     }
@@ -528,7 +518,8 @@ private fun MovieDetailCard(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
-    onRatingRowPositioned: (Offset) -> Unit = {},
+    submittedRating: Float? = null,
+    onFeedbackFinished: () -> Unit = {},
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -566,7 +557,17 @@ private fun MovieDetailCard(
                 }
 
                 Spacer(Modifier.height(spacing.lg))
-                RatingRow(userRating = userRating, onClick = onShowRatingDialog, onPositioned = onRatingRowPositioned)
+                Box {
+                    RatingRow(userRating = userRating, onClick = onShowRatingDialog)
+                    if (submittedRating != null) {
+                        FloatingEmojiFeedback(
+                            emoji = emojiForRating(submittedRating),
+                            accent = LocalAccentColor.current,
+                            onFinished = onFeedbackFinished,
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(spacing.xl))
                 SectionHeader(stringResource(R.string.detail_section_overview))
@@ -1057,7 +1058,6 @@ private fun RatingRow(
     userRating: Float?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onPositioned: (Offset) -> Unit = {},
 ) {
     val accent = LocalAccentColor.current
     val isRated = userRating != null
@@ -1070,11 +1070,6 @@ private fun RatingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
-            .onGloballyPositioned { coords ->
-                val topLeft = coords.localToRoot(Offset.Zero)
-                val sz = coords.size
-                onPositioned(Offset(topLeft.x + sz.width / 2f, topLeft.y + sz.height / 2f))
-            }
             .clickable(onClick = onClick)
             .border(1.dp, chipBorder, RoundedCornerShape(20.dp))
             .background(chipBackground, RoundedCornerShape(20.dp))

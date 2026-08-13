@@ -5,34 +5,49 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+// Canvas clips its drawing, so this needs to be large enough for the particle ring (38dp radius)
+// and the emoji's upward travel (96dp). 240dp gives comfortable headroom for both.
+private val AnimationCanvasSize = 240.dp
+
+// Reports 0×0 to the parent so the anchor composable's layout is unaffected, while placing
+// the content centered at that point. Pass Modifier.align(Alignment.Center) at the call site.
+private fun Modifier.zeroSizeCenteredOverlay(size: Dp): Modifier = this.layout { measurable, _ ->
+    val sizePx = size.roundToPx()
+    val placeable = measurable.measure(Constraints.fixed(sizePx, sizePx))
+    layout(0, 0) { placeable.place(-sizePx / 2, -sizePx / 2) }
+}
+
 @Composable
 fun FloatingEmojiFeedback(
     emoji: String,
-    origin: Offset,
     accent: Color,
-    onFinished: () -> Unit,
+    onFinished: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    val displaySmall = MaterialTheme.typography.displaySmall
+    val textLayout = remember(emoji) { textMeasurer.measure(emoji, displaySmall) }
 
     val scale = remember { Animatable(0f) }
     val travelY = remember { Animatable(0f) }
@@ -58,9 +73,9 @@ fun FloatingEmojiFeedback(
     }
 
     val dotRadiusPx = with(density) { 4.dp.toPx() }
-    val emojiHalfPx = with(density) { 20.dp.toPx() }
 
-    Canvas(Modifier.fillMaxSize()) {
+    Canvas(modifier = modifier.zeroSizeCenteredOverlay(AnimationCanvasSize)) {
+        // Particle ring
         val pa = particleAlpha.value
         val pr = particleRadius.value
         if (pa > 0f) {
@@ -71,29 +86,26 @@ fun FloatingEmojiFeedback(
                     color = color,
                     radius = dotRadiusPx,
                     center = Offset(
-                        origin.x + (pr * cos(angle)).toFloat(),
-                        origin.y + (pr * sin(angle)).toFloat(),
+                        center.x + (pr * cos(angle)).toFloat(),
+                        center.y + (pr * sin(angle)).toFloat(),
                     ),
                 )
             }
         }
-    }
 
-    Text(
-        text = emoji,
-        style = MaterialTheme.typography.displaySmall,
-        modifier = Modifier
-            .absoluteOffset {
-                IntOffset(
-                    x = (origin.x - emojiHalfPx).roundToInt(),
-                    y = (origin.y - emojiHalfPx).roundToInt(),
-                )
+        // Emoji: centered, springs up, fades out
+        val ea = emojiAlpha.value
+        if (ea > 0f) {
+            val sc = scale.value
+            val ty = travelY.value
+            val tw = textLayout.size.width.toFloat()
+            val th = textLayout.size.height.toFloat()
+            withTransform({
+                translate(left = center.x - tw / 2f, top = center.y - th / 2f + ty)
+                scale(scaleX = sc, scaleY = sc, pivot = Offset(tw / 2f, th / 2f))
+            }) {
+                drawText(textLayout, alpha = ea)
             }
-            .graphicsLayer {
-                scaleX = scale.value
-                scaleY = scale.value
-                translationY = travelY.value
-                alpha = emojiAlpha.value
-            },
-    )
+        }
+    }
 }
