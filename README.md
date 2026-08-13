@@ -6,8 +6,9 @@ A full-featured movie discovery and tracking app for Android, built as a portfol
 
 ## What it does
 
-- **Discover** — Paginated movie grid with category tabs (Trending, Top Rated, Now Playing, Upcoming) and genre filtering via `/discover/movie`
-- **Search** — Debounced full-text search with trending idle state and shimmer skeletons
+- **Discover** — Paginated movie grid with category tabs (Trending, Top Rated, Now Playing, Upcoming), genre filtering, and a filter sheet for sort order, minimum rating, and release year — all routed through `/discover/movie`
+- **TV Shows** — Paginated TV grid with the same category/genre/filter system as Discover, plus a full detail screen (seasons, cast, content rating, trailer, similar shows) powered by `/discover/tv` and `/tv/{id}`
+- **Search** — Debounced multi-search (`/search/multi`) returning a mixed grid of movies, TV shows, and people with a dedicated people section; trending idle state and shimmer skeletons
 - **Detail** — Collapsing backdrop, trailer, cast, similar titles, recommendations, watch providers (streaming/rent/buy), reviews, content rating, and dynamic accent color extracted from the poster palette
 - **Watchlist** — Room-backed personal list with swipe-to-dismiss, undo, sort options, and grid/list toggle persisted across sessions
 - **Ratings** — TMDB-synced personal ratings with a custom drag-to-rate bottom sheet and emoji feedback animations
@@ -56,7 +57,8 @@ WSIW/
     ├── feature-detail/         # Movie detail screen, rating sheet, person screen, reviews
     ├── feature-home/           # Discover grid, genre/category filtering
     ├── feature-profile/        # TMDB OAuth sign-in, account view, sign-out
-    ├── feature-search/         # Debounced search, trending idle state
+    ├── feature-search/         # Debounced multi-search (movies + TV + people), trending idle state
+    ├── feature-tv/             # TV show list and detail screens
     └── feature-watchlist/      # Watchlist grid/list, swipe-to-dismiss, sort, view-mode persistence
 ```
 
