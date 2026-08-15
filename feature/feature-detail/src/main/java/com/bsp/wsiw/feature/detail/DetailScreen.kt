@@ -54,17 +54,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.ui.unit.IntOffset
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -279,9 +269,15 @@ private fun CollapsingDetailContent(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
-                submittedRating = submittedRating,
-                onFeedbackFinished = onFeedbackFinished,
             )
+            if (submittedRating != null) {
+                FloatingEmojiFeedback(
+                    emoji = emojiForRating(submittedRating),
+                    accent = LocalAccentColor.current,
+                    onFinished = onFeedbackFinished,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -397,8 +393,6 @@ private fun ContentList(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
-    submittedRating: Float? = null,
-    onFeedbackFinished: () -> Unit = {},
 ) {
     LazyColumn(
         state = listState,
@@ -418,8 +412,6 @@ private fun ContentList(
                 watchProviders = watchProviders,
                 userRating = userRating,
                 onShowRatingDialog = onShowRatingDialog,
-                submittedRating = submittedRating,
-                onFeedbackFinished = onFeedbackFinished,
             )
         }
     }
@@ -518,8 +510,6 @@ private fun MovieDetailCard(
     watchProviders: WatchProviders? = null,
     userRating: Float? = null,
     onShowRatingDialog: () -> Unit = {},
-    submittedRating: Float? = null,
-    onFeedbackFinished: () -> Unit = {},
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -557,17 +547,7 @@ private fun MovieDetailCard(
                 }
 
                 Spacer(Modifier.height(spacing.lg))
-                Box {
-                    RatingRow(userRating = userRating, onClick = onShowRatingDialog)
-                    if (submittedRating != null) {
-                        FloatingEmojiFeedback(
-                            emoji = emojiForRating(submittedRating),
-                            accent = LocalAccentColor.current,
-                            onFinished = onFeedbackFinished,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
-                }
+                RatingRow(userRating = userRating, onClick = onShowRatingDialog)
 
                 Spacer(Modifier.height(spacing.xl))
                 SectionHeader(stringResource(R.string.detail_section_overview))

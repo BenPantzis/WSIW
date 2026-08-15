@@ -29,8 +29,6 @@ import kotlinx.coroutines.launch
 // and the emoji's upward travel (96dp). 240dp gives comfortable headroom for both.
 private val AnimationCanvasSize = 240.dp
 
-// Reports 0×0 to the parent so the anchor composable's layout is unaffected, while placing
-// the content centered at that point. Pass Modifier.align(Alignment.Center) at the call site.
 private fun Modifier.zeroSizeCenteredOverlay(size: Dp): Modifier = this.layout { measurable, _ ->
     val sizePx = size.roundToPx()
     val placeable = measurable.measure(Constraints.fixed(sizePx, sizePx))
@@ -55,7 +53,12 @@ fun FloatingEmojiFeedback(
     val particleRadius = remember { Animatable(0f) }
     val particleAlpha = remember { Animatable(1f) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(emoji) {
+        scale.snapTo(0f)
+        travelY.snapTo(0f)
+        emojiAlpha.snapTo(1f)
+        particleRadius.snapTo(0f)
+        particleAlpha.snapTo(1f)
         val travelPx = with(density) { 96.dp.toPx() }
         val particlePx = with(density) { 38.dp.toPx() }
         launch { scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 350f)) }
@@ -75,7 +78,6 @@ fun FloatingEmojiFeedback(
     val dotRadiusPx = with(density) { 4.dp.toPx() }
 
     Canvas(modifier = modifier.zeroSizeCenteredOverlay(AnimationCanvasSize)) {
-        // Particle ring
         val pa = particleAlpha.value
         val pr = particleRadius.value
         if (pa > 0f) {
@@ -93,7 +95,6 @@ fun FloatingEmojiFeedback(
             }
         }
 
-        // Emoji: centered, springs up, fades out
         val ea = emojiAlpha.value
         if (ea > 0f) {
             val sc = scale.value
