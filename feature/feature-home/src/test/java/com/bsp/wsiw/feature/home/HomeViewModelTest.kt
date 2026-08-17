@@ -3,7 +3,8 @@ package com.bsp.wsiw.feature.home
 import app.cash.turbine.test
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.PagedResult
-import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.usecase.DiscoverMoviesUseCase
+import com.bsp.wsiw.core.domain.usecase.GetGenresUseCase
 import com.bsp.wsiw.core.testing.MainDispatcherRule
 import com.bsp.wsiw.core.testing.fakeMovie
 import com.bsp.wsiw.core.ui.UiText
@@ -17,6 +18,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -25,17 +27,21 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val movieRepository: MovieRepository = mockk(relaxed = true)
+    private val discoverMovies: DiscoverMoviesUseCase = mockk()
+    private val getGenres: GetGenresUseCase = mockk()
 
-    private fun createViewModel() = HomeViewModel(movieRepository)
+    @Before
+    fun setup() {
+        every { discoverMovies(any()) } returns flowOf(Result.Success(PagedResult(items = emptyList(), totalPages = 1)))
+        every { getGenres() } returns flowOf(Result.Success(emptyList()))
+    }
 
-    private fun pagedSuccess(vararg movies: com.bsp.wsiw.core.domain.model.Movie, totalPages: Int = 1) =
-        flowOf(Result.Success(PagedResult(items = movies.toList(), totalPages = totalPages)))
+    private fun createViewModel() = HomeViewModel(discoverMovies, getGenres)
 
     @Test
     fun `success populates movies and clears loading`() {
         val movies = listOf(fakeMovie(id = 1), fakeMovie(id = 2))
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+        every { discoverMovies(any()) } returns
             flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
 
         val vm = createViewModel()
@@ -47,7 +53,7 @@ class HomeViewModelTest {
 
     @Test
     fun `error without cached movies sets error string`() {
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+        every { discoverMovies(any()) } returns
             flowOf(Result.Error(RuntimeException("Network error")))
 
         val vm = createViewModel()
@@ -60,7 +66,7 @@ class HomeViewModelTest {
 
     @Test
     fun `error with null message uses fallback`() {
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+        every { discoverMovies(any()) } returns
             flowOf(Result.Error(null))
 
         val vm = createViewModel()
@@ -73,7 +79,7 @@ class HomeViewModelTest {
     fun `error with cached movies sends snackbar and preserves movies`() = runTest {
         val movies = listOf(fakeMovie())
         var callCount = 0
-        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+        every { discoverMovies(any()) } answers {
             if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
             else flowOf(Result.Error(RuntimeException("No connection")))
         }
@@ -89,26 +95,26 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `refresh calls repository a second time`() {
+    fun `refresh calls source a second time`() {
         val movies = listOf(fakeMovie())
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+        every { discoverMovies(any()) } returns
             flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
 
         val vm = createViewModel()
         vm.onAction(HomeAction.Refresh)
 
-        verify(atLeast = 2) { movieRepository.getMoviesByCategory(any(), any()) }
+        verify(atLeast = 2) { discoverMovies(any()) }
     }
 
     @Test
-    fun `retry calls repository a second time`() {
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+    fun `retry calls source a second time`() {
+        every { discoverMovies(any()) } returns
             flowOf(Result.Success(PagedResult(items = emptyList(), totalPages = 1)))
 
         val vm = createViewModel()
         vm.onAction(HomeAction.Retry)
 
-        verify(atLeast = 2) { movieRepository.getMoviesByCategory(any(), any()) }
+        verify(atLeast = 2) { discoverMovies(any()) }
     }
 
     @Test
@@ -116,7 +122,7 @@ class HomeViewModelTest {
         val page1 = listOf(fakeMovie(id = 1), fakeMovie(id = 2))
         val page2 = listOf(fakeMovie(id = 3), fakeMovie(id = 4))
         var callCount = 0
-        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+        every { discoverMovies(any()) } answers {
             if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = page1, totalPages = 5)))
             else flowOf(Result.Success(PagedResult(items = page2, totalPages = 5)))
         }
@@ -134,32 +140,31 @@ class HomeViewModelTest {
     @Test
     fun `load next page is no-op when already at last page`() {
         val movies = listOf(fakeMovie())
-        every { movieRepository.getMoviesByCategory(any(), any()) } returns
+        every { discoverMovies(any()) } returns
             flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
 
         val vm = createViewModel()
         vm.onAction(HomeAction.LoadNextPage)
 
-        // Still only 1 call (initial load); LoadNextPage guarded by canLoadMore
-        verify(exactly = 1) { movieRepository.getMoviesByCategory(any(), any()) }
+        verify(exactly = 1) { discoverMovies(any()) }
     }
 
     @Test
     fun `category switch resets movies and page`() {
-        val popularMovies = listOf(fakeMovie(id = 1))
-        val trendingMovies = listOf(fakeMovie(id = 2))
+        val trendingMovies = listOf(fakeMovie(id = 1))
+        val topRatedMovies = listOf(fakeMovie(id = 2))
         var callCount = 0
-        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
-            if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = popularMovies, totalPages = 1)))
-            else flowOf(Result.Success(PagedResult(items = trendingMovies, totalPages = 1)))
+        every { discoverMovies(any()) } answers {
+            if (callCount++ == 0) flowOf(Result.Success(PagedResult(items = trendingMovies, totalPages = 1)))
+            else flowOf(Result.Success(PagedResult(items = topRatedMovies, totalPages = 1)))
         }
 
         val vm = createViewModel()
-        assertEquals(popularMovies, vm.uiState.value.movies)
-
-        vm.onAction(HomeAction.SelectCategory(HomeCategory.Trending))
-
         assertEquals(trendingMovies, vm.uiState.value.movies)
+
+        vm.onAction(HomeAction.SelectCategory(HomeCategory.TopRated))
+
+        assertEquals(topRatedMovies, vm.uiState.value.movies)
         assertEquals(1, vm.uiState.value.currentPage)
     }
 
@@ -167,7 +172,7 @@ class HomeViewModelTest {
     fun `success after loading clears error from previous attempt`() {
         val movies = listOf(fakeMovie())
         var callCount = 0
-        every { movieRepository.getMoviesByCategory(any(), any()) } answers {
+        every { discoverMovies(any()) } answers {
             if (callCount++ == 0) flowOf(Result.Error(RuntimeException("fail")))
             else flowOf(Result.Success(PagedResult(items = movies, totalPages = 1)))
         }

@@ -3,10 +3,11 @@ package com.bsp.wsiw.feature.detail
 import android.content.Context
 import app.cash.turbine.test
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
 import com.bsp.wsiw.core.domain.usecase.GetMovieRatingUseCase
+import com.bsp.wsiw.core.domain.usecase.GetMovieReviewsUseCase
+import com.bsp.wsiw.core.domain.usecase.GetWatchProvidersUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
 import com.bsp.wsiw.core.domain.usecase.RateMovieUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
@@ -40,7 +41,8 @@ class DetailViewModelTest {
     private val toggleWatchlist: ToggleWatchlistUseCase = mockk()
     private val getMovieRating: GetMovieRatingUseCase = mockk()
     private val rateMovie: RateMovieUseCase = mockk()
-    private val movieRepository: MovieRepository = mockk()
+    private val getWatchProviders: GetWatchProvidersUseCase = mockk()
+    private val getMovieReviews: GetMovieReviewsUseCase = mockk()
     private val sessionRepository: SessionRepository = mockk()
     // Context only touched by extractPalette, which short-circuits when posterUrl == null
     private val context: Context = mockk()
@@ -51,8 +53,8 @@ class DetailViewModelTest {
         every { isWatchlisted(any()) } returns flowOf(false)
         every { getMovieRating(any()) } returns flowOf(null)
         every { sessionRepository.isAuthenticated } returns flowOf(false)
-        every { movieRepository.getWatchProviders(any()) } returns flowOf(Result.Loading)
-        every { movieRepository.getMovieReviews(any(), any()) } returns flowOf(Result.Loading)
+        every { getWatchProviders(any()) } returns flowOf(Result.Loading)
+        every { getMovieReviews(any()) } returns flowOf(Result.Loading)
     }
 
     private fun createViewModel(movieId: Int = 1) = DetailViewModel(
@@ -62,7 +64,8 @@ class DetailViewModelTest {
         toggleWatchlist = toggleWatchlist,
         getMovieRating = getMovieRating,
         rateMovie = rateMovie,
-        movieRepository = movieRepository,
+        getWatchProviders = getWatchProviders,
+        getMovieReviews = getMovieReviews,
         sessionRepository = sessionRepository,
         context = context,
     )

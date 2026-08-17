@@ -146,15 +146,19 @@ Two product flavors are configured — `dev` and `prod` — both pointing at the
 ./gradlew testDebugUnitTest
 ```
 
-Unit tests cover all five feature ViewModels, Room DAO integration tests for all four DAOs, plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
+Unit tests cover all seven feature ViewModels, Room DAO integration tests for all four DAOs, plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
 
 | Test class | Coverage |
 |---|---|
-| `HomeViewModelTest` | Success/error paths, error-with-cache fires snackbar and preserves movies, retry and refresh trigger a second repository call, pagination appends movies and increments page, category switch resets list, retry clears previous error |
+| `HomeViewModelTest` | Success/error paths, error-with-cache fires snackbar and preserves movies, retry and refresh trigger a second use-case call, pagination appends movies and increments page, category switch resets list, retry clears previous error |
 | `HomeScreenTest` | Roborazzi screenshot tests for loading skeleton and populated content states |
 | `SearchViewModelTest` | Initial empty state, immediate stale-result clearing on query change, blank-query guard, 300 ms debounce timing, error state |
 | `WatchlistViewModelTest` | Watchlist population, ratings map, view mode restored from DataStore on init, grid↔list toggle with persistence, sort selection, `RemoveMovie` use-case args and snackbar event, unknown-id no-op guard, `UndoRemove` re-adds the movie |
 | `DetailViewModelTest` | Load success/error (with and without cached movie), retry triggers second load, `isWatchlisted` flow, `ToggleWatchlist` auth-gating and correct flag, `userRating` flow, `ShowRatingDialog` auth-gating, dismiss dialog, `RateMovie` fires event and calls use case, `RemoveRating` delegates to use-case remove |
+| `TvListViewModelTest` | Success/error paths, error-with-cache fires snackbar and preserves shows, retry and refresh trigger a second use-case call, pagination appends shows, category switch resets list, retry clears previous error |
+| `TvDetailViewModelTest` | Initial loading state, load success/error, same-id no-op guard, load with different id replaces show, retry triggers second fetch |
+| `ProfileViewModelTest` | Session state reflected in UI, watchlist and ratings counts, `startSignIn` sends `OpenBrowser` event with correct URL, `startSignIn` failure sets error, `completeSignIn` clears pending token on success and sets error on failure, `cancelSignIn` clears token, `signOut` delegates to use case |
+| `LoginCallbackViewModelTest` | Token exchange success emits `NavigateToProfile`, failure sets error state, retry re-exchanges and emits navigation event, retry clears error before exchange |
 | `WatchlistDaoTest` | Insert/replace, ordering by `addedAt` DESC, `isWatchlisted` Flow reactivity, `deleteById` row count, `deleteAll`, nullable URL round-trip, Flow emits on write |
 | `PopularMovieCacheDaoTest` | `insertAll` then `getByPage`, page isolation, replace semantics, `deleteByPage` row count and cross-page safety, Flow emits on write |
 | `MovieDetailCacheDaoTest` | Insert/replace, `getById` reactivity on delete, genre pipe-delimiter round-trip, cast JSON round-trip (including `null` `profileUrl`), `similarMovies` JSON round-trip (including `null` image URLs), nullable column fields |

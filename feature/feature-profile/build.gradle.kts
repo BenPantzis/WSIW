@@ -28,4 +28,6 @@ dependencies {
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
     implementation("androidx.compose.material:material-icons-extended")
+
+    testImplementation(project(":core:core-testing"))
 }
