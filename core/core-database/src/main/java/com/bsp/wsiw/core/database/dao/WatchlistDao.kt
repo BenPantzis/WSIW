@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.bsp.wsiw.core.database.entity.WatchlistEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +28,10 @@ interface WatchlistDao {
 
     @Query("DELETE FROM watchlist")
     fun deleteAll()
+
+    @Transaction
+    suspend fun replaceAll(movies: List<WatchlistEntity>) {
+        deleteAll()
+        insertAll(movies)
+    }
 }

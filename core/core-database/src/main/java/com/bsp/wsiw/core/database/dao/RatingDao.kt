@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import androidx.room.Transaction
 import com.bsp.wsiw.core.database.entity.RatingEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -26,4 +27,10 @@ interface RatingDao {
 
     @Query("DELETE FROM ratings")
     fun deleteAll()
+
+    @Transaction
+    suspend fun replaceAll(ratings: List<RatingEntity>) {
+        deleteAll()
+        insertAll(ratings)
+    }
 }

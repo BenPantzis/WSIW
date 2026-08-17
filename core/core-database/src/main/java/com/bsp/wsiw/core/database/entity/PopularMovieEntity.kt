@@ -1,9 +1,10 @@
 package com.bsp.wsiw.core.database.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "popular_movies_cache")
+@Entity(tableName = "popular_movies_cache", indices = [Index(value = ["page"])])
 data class PopularMovieEntity(
     @PrimaryKey val id: Int,
     val title: String,

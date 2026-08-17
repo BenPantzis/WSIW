@@ -17,7 +17,7 @@ import com.bsp.wsiw.core.database.entity.WatchlistEntity
 
 @Database(
     entities = [WatchlistEntity::class, PopularMovieEntity::class, MovieDetailEntity::class, RatingEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -92,6 +92,13 @@ abstract class AppDatabase : RoomDatabase() {
                         PRIMARY KEY(`movieId`)
                     )""",
                 )
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_popular_movies_cache_page` ON `popular_movies_cache` (`page`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_watchlist_addedAt` ON `watchlist` (`addedAt`)")
             }
         }
     }

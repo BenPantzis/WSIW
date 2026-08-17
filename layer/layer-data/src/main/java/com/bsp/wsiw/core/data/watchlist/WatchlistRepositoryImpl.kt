@@ -64,10 +64,7 @@ class WatchlistRepositoryImpl @Inject constructor(
         val entities = movies.mapIndexed { index, dto ->
             dto.toWatchlistEntity(addedAt = now - index * 1_000L)
         }
-        withContext(Dispatchers.IO) {
-            dao.deleteAll()
-            dao.insertAll(entities)
-        }
+        withContext(Dispatchers.IO) { dao.replaceAll(entities) }
     }
 
     override suspend fun clearAll() {
