@@ -2,7 +2,7 @@
 # --- Toolchain ---
 agp = "9.2.1"
 kotlin = "2.2.10"
-ksp = "2.2.10-2.0.2"
+ksp = "2.3.7"
 
 # --- SDK levels ---
 compileSdk = "37"
