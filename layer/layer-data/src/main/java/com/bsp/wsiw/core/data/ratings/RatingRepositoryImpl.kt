@@ -1,9 +1,11 @@
 package com.bsp.wsiw.core.data.ratings
 
+import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.data.movie.toDomain
 import com.bsp.wsiw.core.data.remote.TmdbApiService
 import com.bsp.wsiw.core.data.remote.model.MovieDto
 import com.bsp.wsiw.core.data.remote.model.RatingBody
+import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
 import com.bsp.wsiw.core.database.dao.RatingDao
 import com.bsp.wsiw.core.database.entity.MovieDetailEntity
@@ -58,15 +60,16 @@ class RatingRepositoryImpl @Inject constructor(
 
     override suspend fun refreshRatings() {
         val accountId = sessionRepository.accountId.firstOrNull() ?: return
-        val movies = buildList {
-            var page = 1
-            do {
-                val response = apiService.getRatedMovies(accountId, page)
-                addAll(response.results)
-                if (page >= response.totalPages || page >= MAX_PAGES) break
-                page++
-            } while (true)
-        }
+        val movies = mutableListOf<MovieDto>()
+        var page = 1
+        do {
+            val result = safeApiCall { apiService.getRatedMovies(accountId, page) }
+            if (result is Result.Error) return
+            val response = (result as Result.Success).data
+            movies.addAll(response.results)
+            if (page >= response.totalPages || page >= MAX_PAGES) break
+            page++
+        } while (true)
         val now = System.currentTimeMillis()
         val entities = movies.mapIndexedNotNull { index, dto ->
             val rating = dto.rating ?: return@mapIndexedNotNull null

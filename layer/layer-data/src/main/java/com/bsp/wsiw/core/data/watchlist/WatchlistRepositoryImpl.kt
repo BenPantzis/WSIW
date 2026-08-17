@@ -1,8 +1,10 @@
 package com.bsp.wsiw.core.data.watchlist
 
+import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.data.remote.TmdbApiService
 import com.bsp.wsiw.core.data.remote.model.MovieDto
 import com.bsp.wsiw.core.data.remote.model.WatchlistUpdateBody
+import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.database.dao.WatchlistDao
 import com.bsp.wsiw.core.database.entity.WatchlistEntity
 import com.bsp.wsiw.core.domain.model.Movie
@@ -48,15 +50,16 @@ class WatchlistRepositoryImpl @Inject constructor(
 
     override suspend fun refreshWatchlist() {
         val accountId = sessionRepository.accountId.firstOrNull() ?: return
-        val movies = buildList {
-            var page = 1
-            do {
-                val response = apiService.getWatchlistMovies(accountId, page)
-                addAll(response.results)
-                if (page >= response.totalPages || page >= MAX_PAGES) break
-                page++
-            } while (true)
-        }
+        val movies = mutableListOf<MovieDto>()
+        var page = 1
+        do {
+            val result = safeApiCall { apiService.getWatchlistMovies(accountId, page) }
+            if (result is Result.Error) return
+            val response = (result as Result.Success).data
+            movies.addAll(response.results)
+            if (page >= response.totalPages || page >= MAX_PAGES) break
+            page++
+        } while (true)
         val now = System.currentTimeMillis()
         val entities = movies.mapIndexed { index, dto ->
             dto.toWatchlistEntity(addedAt = now - index * 1_000L)
