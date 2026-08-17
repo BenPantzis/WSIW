@@ -7,6 +7,7 @@ import com.bsp.wsiw.core.domain.usecase.GetAllRatingsUseCase
 import com.bsp.wsiw.core.domain.usecase.GetLocalRatedMoviesUseCase
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -85,7 +86,7 @@ class ProfileViewModel @Inject constructor(
                 updateState { copy(isSigningIn = false, pendingRequestToken = requestToken) }
                 sendEvent(ProfileEvent.OpenBrowser(url))
             } catch (_: Exception) {
-                updateState { copy(isSigningIn = false, error = "Couldn't reach TMDB. Check your connection.") }
+                updateState { copy(isSigningIn = false, error = UiText.StringResource(R.string.profile_error_network)) }
             }
         }
     }
@@ -99,7 +100,7 @@ class ProfileViewModel @Inject constructor(
                 updateState { copy(pendingRequestToken = null, isExchangingToken = false) }
             } catch (_: Exception) {
                 updateState {
-                    copy(isExchangingToken = false, error = "Sign-in failed. Make sure you approved the request on TMDB.")
+                    copy(isExchangingToken = false, error = UiText.StringResource(R.string.profile_error_sign_in_failed))
                 }
             }
         }

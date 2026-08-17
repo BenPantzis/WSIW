@@ -16,10 +16,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bsp.wsiw.core.ui.theme.AppTheme
 
 @Composable
 fun LoginCallbackScreen(
@@ -40,41 +41,42 @@ fun LoginCallbackScreen(
         }
     }
 
+    val spacing = AppTheme.spacing
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = spacing.content),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         if (state.isLoading) {
             CircularProgressIndicator()
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(spacing.lg))
             Text(
-                text = "Signing you in…",
+                text = stringResource(R.string.login_callback_signing_in),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else if (state.error != null) {
             Text(
-                text = state.error!!,
+                text = state.error!!.asString(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(spacing.xl))
             Button(
                 onClick = { viewModel.onAction(LoginCallbackAction.Retry) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Try again")
+                Text(stringResource(R.string.login_callback_try_again))
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(spacing.md))
             Button(
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.login_callback_cancel))
             }
         }
     }

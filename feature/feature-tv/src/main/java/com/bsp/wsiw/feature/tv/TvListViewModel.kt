@@ -129,7 +129,7 @@ class TvListViewModel @Inject constructor(
                     is Result.Error -> {
                         if (uiState.value.shows.isNotEmpty()) {
                             updateState { copy(isLoadingMore = false, isPullRefreshing = false) }
-                            if (replace) sendEvent(TvListEvent.ShowSnackbar(UiText.StringResource(R.string.error_refresh_cached)))
+                            if (replace) sendEvent(TvListEvent.ShowSnackbar(UiText.StringResource(CoreUiR.string.error_refresh_cached)))
                         } else {
                             updateState {
                                 copy(

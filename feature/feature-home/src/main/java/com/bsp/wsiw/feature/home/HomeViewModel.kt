@@ -129,7 +129,7 @@ class HomeViewModel @Inject constructor(
                     is Result.Error -> {
                         if (uiState.value.movies.isNotEmpty()) {
                             updateState { copy(isLoadingMore = false, isPullRefreshing = false) }
-                            if (replace) sendEvent(HomeEvent.ShowSnackbar(UiText.StringResource(R.string.error_refresh_cached)))
+                            if (replace) sendEvent(HomeEvent.ShowSnackbar(UiText.StringResource(CoreUiR.string.error_refresh_cached)))
                         } else {
                             updateState {
                                 copy(

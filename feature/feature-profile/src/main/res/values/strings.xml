@@ -28,4 +28,14 @@
     <string name="profile_unauthenticated_title">TMDB</string>
     <string name="profile_unauthenticated_body">Connect your TMDB account to rate films and sync your watchlist.</string>
     <string name="profile_sign_in_button">Sign in with TMDB</string>
+
+    <!-- Login callback screen -->
+    <string name="login_callback_signing_in">Signing you in…</string>
+    <string name="login_callback_try_again">Try again</string>
+    <string name="login_callback_cancel">Cancel</string>
+    <string name="login_callback_error_generic">Sign-in failed. Please try again.</string>
+
+    <!-- Profile error messages -->
+    <string name="profile_error_network">Couldn\'t reach TMDB. Check your connection.</string>
+    <string name="profile_error_sign_in_failed">Sign-in failed. Make sure you approved the request on TMDB.</string>
 </resources>

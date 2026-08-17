@@ -14,5 +14,4 @@
     <string name="tv_detail_trailer">Watch Trailer</string>
     <string name="tv_seasons_count">%d Season</string>
     <string name="tv_seasons_count_plural">%d Seasons</string>
-    <string name="error_refresh_cached">Couldn\'t refresh — showing cached data</string>
 </resources>

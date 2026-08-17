@@ -1,6 +1,7 @@
 <resources>
     <string name="action_retry">Retry</string>
     <string name="error_something_went_wrong">Something went wrong</string>
+    <string name="error_refresh_cached">Couldn\'t refresh — showing cached data</string>
 
     <!-- Shared discover filter sheet -->
     <string name="filter_title">Filters</string>

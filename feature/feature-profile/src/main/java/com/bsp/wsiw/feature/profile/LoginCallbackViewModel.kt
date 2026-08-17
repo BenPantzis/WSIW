@@ -3,6 +3,7 @@ package com.bsp.wsiw.feature.profile
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.domain.repository.AuthRepository
 import com.bsp.wsiw.core.ui.BaseViewModel
+import com.bsp.wsiw.core.ui.UiText
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -40,7 +41,7 @@ class LoginCallbackViewModel @AssistedInject constructor(
                 authRepository.createUserSession(requestToken)
                 sendEvent(LoginCallbackEvent.NavigateToProfile)
             } catch (_: Exception) {
-                updateState { copy(isLoading = false, error = "Sign-in failed. Please try again.") }
+                updateState { copy(isLoading = false, error = UiText.StringResource(R.string.login_callback_error_generic)) }
             }
         }
     }

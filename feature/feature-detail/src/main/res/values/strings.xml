@@ -1,7 +1,6 @@
 <resources>
     <!-- Shared within feature-detail -->
     <string name="cd_back">Back</string>
-    <string name="error_refresh_cached">Couldn\'t refresh — showing cached data</string>
     <!-- Movie detail screen -->
     <string name="detail_section_overview">Overview</string>
     <string name="detail_section_details">Details</string>

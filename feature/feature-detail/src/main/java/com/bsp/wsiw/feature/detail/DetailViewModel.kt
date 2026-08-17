@@ -166,7 +166,7 @@ class DetailViewModel @AssistedInject constructor(
                         if (uiState.value.movie != null) {
                             // Cached detail already visible — surface an event, keep the screen
                             updateState { copy(isRefreshing = false) }
-                            sendEvent(DetailEvent.ShowError(UiText.StringResource(R.string.error_refresh_cached)))
+                            sendEvent(DetailEvent.ShowError(UiText.StringResource(CoreUiR.string.error_refresh_cached)))
                         } else {
                             updateState {
                                 copy(isLoading = false, isRefreshing = false, error = UiText.StringResource(CoreUiR.string.error_something_went_wrong))

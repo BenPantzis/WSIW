@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.component.AvatarImage
 import com.bsp.wsiw.core.ui.component.MoviePosterCard
 import com.bsp.wsiw.core.ui.theme.AppTheme
@@ -324,7 +324,7 @@ private fun RatingBreakdown(
 @Composable
 private fun AwaitingApprovalContent(
     isLoading: Boolean,
-    error: String?,
+    error: UiText?,
     onContinue: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -361,7 +361,7 @@ private fun AwaitingApprovalContent(
         if (error != null) {
             Spacer(Modifier.height(AppTheme.spacing.md))
             Text(
-                text = error,
+                text = error.asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
@@ -373,7 +373,7 @@ private fun AwaitingApprovalContent(
 @Composable
 private fun UnauthenticatedContent(
     isLoading: Boolean,
-    error: String?,
+    error: UiText?,
     onSignIn: () -> Unit,
 ) {
     Column(
@@ -406,7 +406,7 @@ private fun UnauthenticatedContent(
         if (error != null) {
             Spacer(Modifier.height(AppTheme.spacing.md))
             Text(
-                text = error,
+                text = error.asString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,

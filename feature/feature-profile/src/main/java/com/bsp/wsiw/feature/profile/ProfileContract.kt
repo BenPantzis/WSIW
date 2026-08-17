@@ -1,6 +1,7 @@
 package com.bsp.wsiw.feature.profile
 
 import com.bsp.wsiw.core.domain.model.Movie
+import com.bsp.wsiw.core.ui.UiText
 
 sealed interface ProfileAction {
     data object SignIn : ProfileAction
@@ -20,7 +21,7 @@ data class ProfileUiState(
     val isSigningIn: Boolean = false,
     val pendingRequestToken: String? = null,
     val isExchangingToken: Boolean = false,
-    val error: String? = null,
+    val error: UiText? = null,
     val watchlistCount: Int = 0,
     val ratingsCount: Int = 0,
     val averageRating: Float? = null,
@@ -39,5 +40,5 @@ sealed interface LoginCallbackEvent {
 
 data class LoginCallbackUiState(
     val isLoading: Boolean = true,
-    val error: String? = null,
+    val error: UiText? = null,
 )
