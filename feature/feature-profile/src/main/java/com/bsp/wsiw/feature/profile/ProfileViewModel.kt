@@ -1,11 +1,13 @@
 package com.bsp.wsiw.feature.profile
 
 import androidx.lifecycle.viewModelScope
-import com.bsp.wsiw.core.domain.repository.AuthRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
+import com.bsp.wsiw.core.domain.usecase.CreateUserSessionUseCase
 import com.bsp.wsiw.core.domain.usecase.GetAllRatingsUseCase
 import com.bsp.wsiw.core.domain.usecase.GetLocalRatedMoviesUseCase
+import com.bsp.wsiw.core.domain.usecase.GetRequestTokenUseCase
 import com.bsp.wsiw.core.domain.usecase.GetWatchlistUseCase
+import com.bsp.wsiw.core.domain.usecase.SignOutUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,11 +19,13 @@ private const val TMDB_APPROVE_BASE = "https://www.themoviedb.org/auth/access"
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
     private val sessionRepository: SessionRepository,
     private val getWatchlist: GetWatchlistUseCase,
     private val getAllRatings: GetAllRatingsUseCase,
     private val getLocalRatedMovies: GetLocalRatedMoviesUseCase,
+    private val getRequestToken: GetRequestTokenUseCase,
+    private val createUserSession: CreateUserSessionUseCase,
+    private val signOut: SignOutUseCase,
 ) : BaseViewModel<ProfileAction, ProfileEvent, ProfileUiState>(
     initialState = ProfileUiState(),
 ) {
@@ -69,7 +73,7 @@ class ProfileViewModel @Inject constructor(
     override fun handleAction(action: ProfileAction) {
         when (action) {
             ProfileAction.SignIn -> startSignIn()
-            ProfileAction.SignOut -> signOut()
+            ProfileAction.SignOut -> doSignOut()
             ProfileAction.CompleteSignIn -> completeSignIn()
             ProfileAction.CancelSignIn -> updateState {
                 copy(pendingRequestToken = null, isExchangingToken = false, error = null)
@@ -81,7 +85,7 @@ class ProfileViewModel @Inject constructor(
         updateState { copy(isSigningIn = true, error = null) }
         viewModelScope.launch {
             try {
-                val requestToken = authRepository.getRequestToken()
+                val requestToken = getRequestToken()
                 val url = "$TMDB_APPROVE_BASE?request_token=$requestToken"
                 updateState { copy(isSigningIn = false, pendingRequestToken = requestToken) }
                 sendEvent(ProfileEvent.OpenBrowser(url))
@@ -96,7 +100,7 @@ class ProfileViewModel @Inject constructor(
         updateState { copy(isExchangingToken = true, error = null) }
         viewModelScope.launch {
             try {
-                authRepository.createUserSession(token)
+                createUserSession(token)
                 updateState { copy(pendingRequestToken = null, isExchangingToken = false) }
             } catch (_: Exception) {
                 updateState {
@@ -106,9 +110,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private fun signOut() {
+    private fun doSignOut() {
         viewModelScope.launch {
-            try { authRepository.signOut() } catch (_: Exception) { }
+            try { signOut() } catch (_: Exception) { }
         }
     }
 }

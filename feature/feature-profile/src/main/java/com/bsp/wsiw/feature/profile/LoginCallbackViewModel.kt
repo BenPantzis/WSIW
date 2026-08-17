@@ -1,7 +1,7 @@
 package com.bsp.wsiw.feature.profile
 
 import androidx.lifecycle.viewModelScope
-import com.bsp.wsiw.core.domain.repository.AuthRepository
+import com.bsp.wsiw.core.domain.usecase.CreateUserSessionUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import dagger.assisted.Assisted
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = LoginCallbackViewModel.Factory::class)
 class LoginCallbackViewModel @AssistedInject constructor(
     @Assisted val requestToken: String,
-    private val authRepository: AuthRepository,
+    private val createUserSession: CreateUserSessionUseCase,
 ) : BaseViewModel<LoginCallbackAction, LoginCallbackEvent, LoginCallbackUiState>(
     initialState = LoginCallbackUiState(),
 ) {
@@ -38,7 +38,7 @@ class LoginCallbackViewModel @AssistedInject constructor(
     private fun exchangeToken() {
         viewModelScope.launch {
             try {
-                authRepository.createUserSession(requestToken)
+                createUserSession(requestToken)
                 sendEvent(LoginCallbackEvent.NavigateToProfile)
             } catch (_: Exception) {
                 updateState { copy(isLoading = false, error = UiText.StringResource(R.string.login_callback_error_generic)) }

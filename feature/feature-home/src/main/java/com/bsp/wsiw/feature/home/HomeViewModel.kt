@@ -5,7 +5,8 @@ import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.DiscoverFilter
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.Movie
-import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.usecase.DiscoverMoviesUseCase
+import com.bsp.wsiw.core.domain.usecase.GetGenresUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val movieRepository: MovieRepository,
+    private val discoverMovies: DiscoverMoviesUseCase,
+    private val getGenres: GetGenresUseCase,
 ) : BaseViewModel<HomeAction, HomeEvent, HomeUiState>(
     initialState = HomeUiState(),
 ) {
@@ -91,11 +93,7 @@ class HomeViewModel @Inject constructor(
         return if (state.selectedCategory == HomeCategory.ByGenre && genreId == null) {
             flow { }
         } else {
-            movieRepository.discoverMovies(
-                genreId = genreId,
-                filter = state.filter,
-                page = page,
-            )
+            discoverMovies(DiscoverMoviesUseCase.Params(genreId = genreId, filter = state.filter, page = page))
         }
     }
 
@@ -159,7 +157,7 @@ class HomeViewModel @Inject constructor(
         }
         viewModelScope.launch {
             updateState { copy(isGenresLoading = true) }
-            movieRepository.getGenres().collect { result ->
+            getGenres().collect { result ->
                 when (result) {
                     is Result.Success -> {
                         val firstId = result.data.firstOrNull()?.id

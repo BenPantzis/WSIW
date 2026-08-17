@@ -9,10 +9,11 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.Movie
-import com.bsp.wsiw.core.domain.repository.MovieRepository
 import com.bsp.wsiw.core.domain.repository.SessionRepository
 import com.bsp.wsiw.core.domain.usecase.GetMovieDetailUseCase
 import com.bsp.wsiw.core.domain.usecase.GetMovieRatingUseCase
+import com.bsp.wsiw.core.domain.usecase.GetMovieReviewsUseCase
+import com.bsp.wsiw.core.domain.usecase.GetWatchProvidersUseCase
 import com.bsp.wsiw.core.domain.usecase.IsWatchlistedUseCase
 import com.bsp.wsiw.core.domain.usecase.RateMovieUseCase
 import com.bsp.wsiw.core.domain.usecase.ToggleWatchlistUseCase
@@ -37,7 +38,8 @@ class DetailViewModel @AssistedInject constructor(
     private val toggleWatchlist: ToggleWatchlistUseCase,
     private val getMovieRating: GetMovieRatingUseCase,
     private val rateMovie: RateMovieUseCase,
-    private val movieRepository: MovieRepository,
+    private val getWatchProviders: GetWatchProvidersUseCase,
+    private val getMovieReviews: GetMovieReviewsUseCase,
     private val sessionRepository: SessionRepository,
     @param:ApplicationContext private val context: Context,
 ) : BaseViewModel<DetailAction, DetailEvent, DetailUiState>(
@@ -120,8 +122,8 @@ class DetailViewModel @AssistedInject constructor(
 
     private fun loadWatchProviders() {
         viewModelScope.launch {
-            movieRepository.getWatchProviders(movieId).collect { result ->
-                if (result is com.bsp.wsiw.core.common.Result.Success && !result.data.isEmpty) {
+            getWatchProviders(movieId).collect { result ->
+                if (result is Result.Success && !result.data.isEmpty) {
                     updateState { copy(watchProviders = result.data) }
                 }
             }
@@ -130,7 +132,7 @@ class DetailViewModel @AssistedInject constructor(
 
     private fun loadReviewPreview() {
         viewModelScope.launch {
-            movieRepository.getMovieReviews(movieId, page = 1).collect { result ->
+            getMovieReviews(GetMovieReviewsUseCase.Params(movieId = movieId, page = 1)).collect { result ->
                 if (result is Result.Success) {
                     updateState {
                         copy(

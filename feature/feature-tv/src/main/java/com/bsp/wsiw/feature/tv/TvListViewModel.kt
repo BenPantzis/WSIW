@@ -5,7 +5,9 @@ import com.bsp.wsiw.core.common.Result
 import com.bsp.wsiw.core.domain.model.DiscoverFilter
 import com.bsp.wsiw.core.domain.model.PagedResult
 import com.bsp.wsiw.core.domain.model.TvShow
-import com.bsp.wsiw.core.domain.repository.TvRepository
+import com.bsp.wsiw.core.domain.usecase.DiscoverTvUseCase
+import com.bsp.wsiw.core.domain.usecase.GetTvByCategoryUseCase
+import com.bsp.wsiw.core.domain.usecase.GetTvGenresUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -18,7 +20,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TvListViewModel @Inject constructor(
-    private val tvRepository: TvRepository,
+    private val discoverTv: DiscoverTvUseCase,
+    private val getTvByCategory: GetTvByCategoryUseCase,
+    private val getTvGenres: GetTvGenresUseCase,
 ) : BaseViewModel<TvListAction, TvListEvent, TvListUiState>(
     initialState = TvListUiState(),
 ) {
@@ -88,14 +92,12 @@ class TvListViewModel @Inject constructor(
         return when {
             state.selectedCategory == TvCategory.ByGenre -> {
                 val genreId = state.selectedGenreId ?: return flow { }
-                tvRepository.discoverTv(genreId = genreId, filter = state.filter, page = page)
+                discoverTv(DiscoverTvUseCase.Params(genreId = genreId, filter = state.filter, page = page))
             }
-            !state.filter.isDefault -> tvRepository.discoverTv(
-                genreId = null,
-                filter = state.filter,
-                page = page,
+            !state.filter.isDefault -> discoverTv(
+                DiscoverTvUseCase.Params(genreId = null, filter = state.filter, page = page)
             )
-            else -> tvRepository.getTvByCategory(state.selectedCategory.apiKey, page)
+            else -> getTvByCategory(GetTvByCategoryUseCase.Params(category = state.selectedCategory.apiKey, page = page))
         }
     }
 
@@ -159,7 +161,7 @@ class TvListViewModel @Inject constructor(
         }
         viewModelScope.launch {
             updateState { copy(isGenresLoading = true) }
-            tvRepository.getTvGenres().collect { result ->
+            getTvGenres().collect { result ->
                 when (result) {
                     is Result.Success -> {
                         val firstId = result.data.firstOrNull()?.id

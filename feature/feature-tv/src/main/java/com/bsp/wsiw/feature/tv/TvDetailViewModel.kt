@@ -2,7 +2,7 @@ package com.bsp.wsiw.feature.tv
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.repository.TvRepository
+import com.bsp.wsiw.core.domain.usecase.GetTvDetailUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TvDetailViewModel @Inject constructor(
-    private val tvRepository: TvRepository,
+    private val getTvDetail: GetTvDetailUseCase,
 ) : BaseViewModel<TvDetailAction, TvDetailEvent, TvDetailUiState>(
     initialState = TvDetailUiState(),
 ) {
@@ -33,7 +33,7 @@ class TvDetailViewModel @Inject constructor(
     private fun fetch() {
         viewModelScope.launch {
             updateState { copy(isLoading = true, error = null) }
-            tvRepository.getTvDetail(seriesId).collect { result ->
+            getTvDetail(seriesId).collect { result ->
                 when (result) {
                     is Result.Success -> updateState { copy(isLoading = false, show = result.data) }
                     is Result.Error -> updateState {
