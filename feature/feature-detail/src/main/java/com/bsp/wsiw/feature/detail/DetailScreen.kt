@@ -105,6 +105,7 @@ private val BackdropHeight = 300.dp
 private val ContentOverlap = 32.dp
 private val CardBottomPadding = 48.dp          // extra breathing room below last section
 private val TopBarTitlePadding = 56.dp         // horizontal clear for back button
+private val FabAreaHeight = 56.dp             // standard FAB/icon-button tap target height
 private val ButtonScrim = Color(0x99000000)    // semi-transparent scrim behind icon buttons
 private val RatingChipHPadding = 14.dp
 private val RatingChipVPadding = 7.dp
@@ -283,7 +284,7 @@ private fun CollapsingDetailContent(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .graphicsLayer { alpha = (1f - scrollFraction).coerceIn(0f, 1f) }
-                    .padding(top = BackdropHeight - ContentOverlap - 56.dp, end = AppTheme.spacing.lg),
+                    .padding(top = BackdropHeight - ContentOverlap - FabAreaHeight, end = AppTheme.spacing.lg),
             ) {
                 BookmarkButton(
                     isWatchlisted = isWatchlisted,

@@ -13,7 +13,7 @@ A full-featured movie discovery and tracking app for Android, built as a portfol
 - **Watchlist** — Room-backed personal list with swipe-to-dismiss, undo, sort options, and grid/list toggle persisted across sessions
 - **Ratings** — TMDB-synced personal ratings with a custom drag-to-rate bottom sheet and emoji feedback animations
 - **Profile** — TMDB OAuth sign-in (v4 browser handoff flow) with account info and sign-out; signed-in state gates write operations
-- **Offline-first** — Stale-while-revalidate caching with a 10-minute TTL; all lists serve instantly from Room while a background fetch runs
+- **Offline-first** — Stale-while-revalidate caching with a 10-minute TTL; movies and movie detail serve instantly from Room while a background fetch runs (TV, search, and genres fetch on every load)
 
 <br>
 
