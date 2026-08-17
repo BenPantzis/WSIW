@@ -255,7 +255,7 @@ private fun WsiwApp(
             onBack = { backStack.removeLastOrNull() },
             transitionSpec = {
                 if (targetState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
+                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
                     }) {
                     (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
                 } else {
@@ -264,7 +264,7 @@ private fun WsiwApp(
             },
             popTransitionSpec = {
                 if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
+                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
                     }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {
@@ -273,7 +273,7 @@ private fun WsiwApp(
             },
             predictivePopTransitionSpec = {
                 if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it.toString().startsWith("DetailKey") || it.toString().startsWith("TvDetailKey") || it is RatedMoviesKey
+                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
                     }) {
                     EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
                 } else {

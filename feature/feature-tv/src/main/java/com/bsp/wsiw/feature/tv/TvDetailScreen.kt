@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -114,7 +115,7 @@ private fun CollapsingTvDetail(
     onPersonClick: (Int) -> Unit,
 ) {
     val context = LocalContext.current
-    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val listState = rememberLazyListState()
     val firstVisibleOffset by remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
     val firstVisibleIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
 

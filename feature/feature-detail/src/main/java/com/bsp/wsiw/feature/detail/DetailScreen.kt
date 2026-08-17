@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -231,7 +232,7 @@ private fun CollapsingDetailContent(
 ) {
     var showBookmarkAnimation by remember { mutableStateOf(false) }
     val backdropHeightPx = with(LocalDensity.current) { BackdropHeight.toPx() }
-    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val listState = rememberLazyListState()
 
     val scrollFraction by remember {
         derivedStateOf {
