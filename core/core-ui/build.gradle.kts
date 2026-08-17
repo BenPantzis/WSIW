@@ -25,5 +25,6 @@ dependencies {
     api(project(":core:core-common"))
 
     implementation(catalog.findLibrary("coil-compose").get())
+    implementation(catalog.findLibrary("coil-network-okhttp").get())
     api(catalog.findLibrary("timber").get())
 }

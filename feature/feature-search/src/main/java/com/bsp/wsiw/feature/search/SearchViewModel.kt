@@ -2,7 +2,7 @@ package com.bsp.wsiw.feature.search
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.usecase.GetTrendingMoviesUseCase
 import com.bsp.wsiw.core.domain.usecase.MultiSearchUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
@@ -22,7 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val multiSearch: MultiSearchUseCase,
-    private val movieRepository: MovieRepository,
+    private val getTrendingMovies: GetTrendingMoviesUseCase,
 ) : BaseViewModel<SearchAction, SearchEvent, SearchUiState>(
     initialState = SearchUiState(),
 ) {
@@ -76,7 +76,7 @@ class SearchViewModel @Inject constructor(
 
     private fun loadTrending() {
         viewModelScope.launch {
-            movieRepository.getMoviesByCategory("trending").collect { result ->
+            getTrendingMovies(1).collect { result ->
                 when (result) {
                     is Result.Success -> updateState {
                         copy(trendingMovies = result.data.items, isTrendingLoading = false)

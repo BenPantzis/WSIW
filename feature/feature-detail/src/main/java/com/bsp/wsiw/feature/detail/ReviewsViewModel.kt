@@ -2,7 +2,7 @@ package com.bsp.wsiw.feature.detail
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.usecase.GetMovieReviewsUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = ReviewsViewModel.Factory::class)
 class ReviewsViewModel @AssistedInject constructor(
     @Assisted private val movieId: Int,
-    private val repository: MovieRepository,
-) : BaseViewModel<ReviewsAction, Nothing, ReviewsUiState>(
+    private val getMovieReviews: GetMovieReviewsUseCase,
+) : BaseViewModel<ReviewsAction, ReviewsEvent, ReviewsUiState>(
     initialState = ReviewsUiState(),
 ) {
     @AssistedFactory
@@ -43,7 +43,7 @@ class ReviewsViewModel @AssistedInject constructor(
             if (replace) updateState { copy(isLoading = reviews.isEmpty(), isLoadingMore = false, error = null) }
             else updateState { copy(isLoadingMore = true) }
 
-            repository.getMovieReviews(movieId, page).collect { result ->
+            getMovieReviews(GetMovieReviewsUseCase.Params(movieId, page)).collect { result ->
                 when (result) {
                     is Result.Success -> {
                         val paged = result.data
@@ -58,12 +58,16 @@ class ReviewsViewModel @AssistedInject constructor(
                             )
                         }
                     }
-                    is Result.Error -> updateState {
-                        copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            error = if (reviews.isEmpty()) UiText.StringResource(CoreUiR.string.error_something_went_wrong) else null,
-                        )
+                    is Result.Error -> {
+                        val hasReviews = uiState.value.reviews.isNotEmpty()
+                        updateState {
+                            copy(
+                                isLoading = false,
+                                isLoadingMore = false,
+                                error = if (!hasReviews) UiText.StringResource(CoreUiR.string.error_something_went_wrong) else null,
+                            )
+                        }
+                        if (hasReviews) sendEvent(ReviewsEvent.ShowSnackbar(UiText.StringResource(CoreUiR.string.error_something_went_wrong)))
                     }
                     Result.Loading -> Unit
                 }

@@ -66,7 +66,7 @@ dependencies {
     implementation(catalog.findLibrary("androidx-navigation3-ui").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-core")
+    implementation(catalog.findLibrary("androidx-compose-material-icons-core").get())
 
     implementation(catalog.findLibrary("timber").get())
     implementation(catalog.findLibrary("androidx-core-splashscreen").get())

@@ -45,7 +45,9 @@ class AuthRepositoryImpl @Inject constructor(
             if (currentToken != null) {
                 authService.deleteAccessToken(AccessTokenBody(currentToken))
             }
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+        }
         tokenProvider.clearTokens()
         sessionRepository.clearSession()
         watchlistRepository.clearAll()

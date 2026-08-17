@@ -89,7 +89,8 @@ class ProfileViewModel @Inject constructor(
                 val url = "$TMDB_APPROVE_BASE?request_token=$requestToken"
                 updateState { copy(isSigningIn = false, pendingRequestToken = requestToken) }
                 sendEvent(ProfileEvent.OpenBrowser(url))
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 updateState { copy(isSigningIn = false, error = UiText.StringResource(R.string.profile_error_network)) }
             }
         }
@@ -102,7 +103,8 @@ class ProfileViewModel @Inject constructor(
             try {
                 createUserSession(token)
                 updateState { copy(pendingRequestToken = null, isExchangingToken = false) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 updateState {
                     copy(isExchangingToken = false, error = UiText.StringResource(R.string.profile_error_sign_in_failed))
                 }
@@ -112,7 +114,11 @@ class ProfileViewModel @Inject constructor(
 
     private fun doSignOut() {
         viewModelScope.launch {
-            try { signOut() } catch (_: Exception) { }
+            try {
+                signOut()
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+            }
         }
     }
 }

@@ -5,7 +5,6 @@ import com.bsp.wsiw.core.data.remote.TmdbApiService
 import com.bsp.wsiw.core.data.util.networkBoundResource
 import com.bsp.wsiw.core.data.util.safeApiCall
 import com.bsp.wsiw.core.database.dao.MovieDetailCacheDao
-import com.bsp.wsiw.core.database.dao.PopularMovieCacheDao
 import com.bsp.wsiw.core.domain.model.DiscoverFilter
 import com.bsp.wsiw.core.domain.model.Genre
 import com.bsp.wsiw.core.domain.model.Movie
@@ -28,39 +27,12 @@ private const val CACHE_TTL = 10 * 60 * 1000L // 10 minutes
 
 class MovieRepositoryImpl @Inject constructor(
     private val apiService: TmdbApiService,
-    private val popularMovieDao: PopularMovieCacheDao,
     private val movieDetailDao: MovieDetailCacheDao,
 ) : MovieRepository {
 
-    override fun getPopularMovies(page: Int, forceRefresh: Boolean): Flow<Result<List<Movie>>> =
-        networkBoundResource(
-            query = { popularMovieDao.getByPage(page) },
-            fetch = { apiService.getPopularMovies(page).results },
-            saveFetchResult = { dtos ->
-                popularMovieDao.deleteByPage(page)
-                popularMovieDao.insertAll(dtos.map { it.toEntity(page) })
-            },
-            shouldFetch = { cached ->
-                forceRefresh || cached.isEmpty() || System.currentTimeMillis() - cached.minOf { it.cachedAt } > CACHE_TTL
-            },
-        ).map { result ->
-            when (result) {
-                is Result.Success -> Result.Success(result.data.map { it.toDomain() })
-                is Result.Error -> Result.Error(result.exception)
-                Result.Loading -> Result.Loading
-            }
-        }
-
-    override fun getMoviesByCategory(category: String, page: Int): Flow<Result<PagedResult<Movie>>> = flow {
+    override fun getTrendingMovies(page: Int): Flow<Result<PagedResult<Movie>>> = flow {
         emit(safeApiCall {
-            val response = when (category) {
-                "popular" -> apiService.getPopularMovies(page)
-                "trending" -> apiService.getTrendingMovies(page)
-                "top_rated" -> apiService.getTopRatedMovies(page)
-                "now_playing" -> apiService.getNowPlayingMovies(page)
-                "upcoming" -> apiService.getUpcomingMovies(page)
-                else -> throw IllegalArgumentException("Unknown category: $category")
-            }
+            val response = apiService.getTrendingMovies(page)
             PagedResult(items = response.results.map { it.toDomain() }, totalPages = response.totalPages)
         })
     }

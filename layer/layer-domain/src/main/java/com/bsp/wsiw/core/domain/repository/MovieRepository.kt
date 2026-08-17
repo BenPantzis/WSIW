@@ -13,8 +13,7 @@ import com.bsp.wsiw.core.domain.model.WatchProviders
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
-    fun getPopularMovies(page: Int = 1, forceRefresh: Boolean = false): Flow<Result<List<Movie>>>
-    fun getMoviesByCategory(category: String, page: Int = 1): Flow<Result<PagedResult<Movie>>>
+    fun getTrendingMovies(page: Int = 1): Flow<Result<PagedResult<Movie>>>
     fun discoverMovies(genreId: Int?, filter: DiscoverFilter, page: Int = 1): Flow<Result<PagedResult<Movie>>>
     fun getGenres(): Flow<Result<List<Genre>>>
     fun multiSearch(query: String, page: Int = 1): Flow<Result<List<SearchResult>>>

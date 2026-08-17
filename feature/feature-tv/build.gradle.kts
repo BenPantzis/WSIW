@@ -25,7 +25,7 @@ dependencies {
     implementation(catalog.findLibrary("kotlinx-serialization-core").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(catalog.findLibrary("androidx-compose-material-icons-extended").get())
     implementation(catalog.findLibrary("coil-compose").get())
 
     testImplementation(project(":core:core-testing"))

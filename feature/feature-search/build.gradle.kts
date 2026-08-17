@@ -26,7 +26,7 @@ dependencies {
     implementation(catalog.findLibrary("coroutines-android").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-core")
+    implementation(catalog.findLibrary("androidx-compose-material-icons-core").get())
     implementation(catalog.findLibrary("coil-compose").get())
 
     testImplementation(project(":core:core-testing"))

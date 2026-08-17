@@ -31,7 +31,7 @@ dependencies {
     implementation(catalog.findLibrary("kotlinx-serialization-core").get())
 
     implementation(platform(catalog.findLibrary("androidx-compose-bom").get()))
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(catalog.findLibrary("androidx-compose-material-icons-extended").get())
 
     testImplementation(project(":core:core-testing"))
     testImplementation(catalog.findLibrary("robolectric").get())

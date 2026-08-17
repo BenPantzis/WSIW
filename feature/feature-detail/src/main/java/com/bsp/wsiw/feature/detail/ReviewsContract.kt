@@ -17,6 +17,10 @@ sealed interface ReviewsAction {
     data object Retry : ReviewsAction
 }
 
+sealed interface ReviewsEvent {
+    data class ShowSnackbar(val message: UiText) : ReviewsEvent
+}
+
 data class ReviewsUiState(
     val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,

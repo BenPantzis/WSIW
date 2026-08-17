@@ -37,7 +37,9 @@ class WatchlistRepositoryImpl @Inject constructor(
         val accountId = sessionRepository.accountId.firstOrNull() ?: return
         try {
             apiService.updateWatchlist(accountId, WatchlistUpdateBody(mediaId = movie.id, watchlist = true))
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+        }
     }
 
     override suspend fun removeFromWatchlist(movieId: Int) {
@@ -45,7 +47,9 @@ class WatchlistRepositoryImpl @Inject constructor(
         val accountId = sessionRepository.accountId.firstOrNull() ?: return
         try {
             apiService.updateWatchlist(accountId, WatchlistUpdateBody(mediaId = movieId, watchlist = false))
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+        }
     }
 
     override suspend fun refreshWatchlist() {

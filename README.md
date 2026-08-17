@@ -146,7 +146,7 @@ Two product flavors are configured — `dev` and `prod` — both pointing at the
 ./gradlew testDebugUnitTest
 ```
 
-Unit tests cover all seven feature ViewModels, Room DAO integration tests for all four DAOs, plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
+Unit tests cover all eleven feature ViewModels, Room DAO integration tests for all four DAOs, plus screenshot tests for the Home screen. The stack is JUnit 4 + MockK + Turbine + `kotlinx-coroutines-test`, with a `MainDispatcherRule` that replaces `Dispatchers.Main` with `UnconfinedTestDispatcher` so coroutines settle synchronously after each action.
 
 | Test class | Coverage |
 |---|---|
@@ -159,6 +159,9 @@ Unit tests cover all seven feature ViewModels, Room DAO integration tests for al
 | `TvDetailViewModelTest` | Initial loading state, load success/error, same-id no-op guard, load with different id replaces show, retry triggers second fetch |
 | `ProfileViewModelTest` | Session state reflected in UI, watchlist and ratings counts, `startSignIn` sends `OpenBrowser` event with correct URL, `startSignIn` failure sets error, `completeSignIn` clears pending token on success and sets error on failure, `cancelSignIn` clears token, `signOut` delegates to use case |
 | `LoginCallbackViewModelTest` | Token exchange success emits `NavigateToProfile`, failure sets error state, retry re-exchanges and emits navigation event, retry clears error before exchange |
+| `ReviewsViewModelTest` | Initial load success/error, retry triggers second fetch, load-next-page appends reviews, load-next-page no-op at last page, pagination error with cached reviews sends snackbar and preserves list, sort change does not reload |
+| `PersonViewModelTest` | Load success/error, retry triggers second fetch, retry after error clears error and loads person |
+| `RatedMoviesViewModelTest` | Empty list on init, rated movies reflected in state, single movie with correct rating |
 | `WatchlistDaoTest` | Insert/replace, ordering by `addedAt` DESC, `isWatchlisted` Flow reactivity, `deleteById` row count, `deleteAll`, nullable URL round-trip, Flow emits on write |
 | `PopularMovieCacheDaoTest` | `insertAll` then `getByPage`, page isolation, replace semantics, `deleteByPage` row count and cross-page safety, Flow emits on write |
 | `MovieDetailCacheDaoTest` | Insert/replace, `getById` reactivity on delete, genre pipe-delimiter round-trip, cast JSON round-trip (including `null` `profileUrl`), `similarMovies` JSON round-trip (including `null` image URLs), nullable column fields |

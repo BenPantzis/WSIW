@@ -2,7 +2,7 @@ package com.bsp.wsiw.feature.detail
 
 import androidx.lifecycle.viewModelScope
 import com.bsp.wsiw.core.common.Result
-import com.bsp.wsiw.core.domain.repository.MovieRepository
+import com.bsp.wsiw.core.domain.usecase.GetPersonDetailUseCase
 import com.bsp.wsiw.core.ui.BaseViewModel
 import com.bsp.wsiw.core.ui.UiText
 import com.bsp.wsiw.core.ui.R as CoreUiR
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = PersonViewModel.Factory::class)
 class PersonViewModel @AssistedInject constructor(
     @Assisted private val personId: Int,
-    private val repository: MovieRepository,
+    private val getPersonDetail: GetPersonDetailUseCase,
 ) : BaseViewModel<PersonAction, Nothing, PersonUiState>(
     initialState = PersonUiState(),
 ) {
@@ -37,7 +37,7 @@ class PersonViewModel @AssistedInject constructor(
     private fun load() {
         viewModelScope.launch {
             updateState { copy(isLoading = true, error = null) }
-            repository.getPersonDetail(personId).collect { result ->
+            getPersonDetail(personId).collect { result ->
                 when (result) {
                     is Result.Success -> updateState { copy(isLoading = false, person = result.data) }
                     is Result.Error -> updateState {

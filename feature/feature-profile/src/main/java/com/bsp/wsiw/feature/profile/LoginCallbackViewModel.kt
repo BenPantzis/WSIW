@@ -40,7 +40,8 @@ class LoginCallbackViewModel @AssistedInject constructor(
             try {
                 createUserSession(requestToken)
                 sendEvent(LoginCallbackEvent.NavigateToProfile)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 updateState { copy(isLoading = false, error = UiText.StringResource(R.string.login_callback_error_generic)) }
             }
         }

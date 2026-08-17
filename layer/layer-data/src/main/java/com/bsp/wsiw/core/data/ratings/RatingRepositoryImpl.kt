@@ -50,12 +50,20 @@ class RatingRepositoryImpl @Inject constructor(
 
     override suspend fun rateMovie(movieId: Int, rating: Float) {
         withContext(Dispatchers.IO) { dao.upsert(RatingEntity(movieId, rating, System.currentTimeMillis())) }
-        try { apiService.rateMovie(movieId, RatingBody(rating)) } catch (_: Exception) { }
+        try {
+            apiService.rateMovie(movieId, RatingBody(rating))
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+        }
     }
 
     override suspend fun removeRating(movieId: Int) {
         withContext(Dispatchers.IO) { dao.delete(movieId) }
-        try { apiService.deleteMovieRating(movieId) } catch (_: Exception) { }
+        try {
+            apiService.deleteMovieRating(movieId)
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+        }
     }
 
     override suspend fun refreshRatings() {
