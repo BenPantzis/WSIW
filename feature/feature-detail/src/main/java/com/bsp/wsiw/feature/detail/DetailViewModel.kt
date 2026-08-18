@@ -51,11 +51,9 @@ class DetailViewModel @AssistedInject constructor(
     }
 
     private var loadJob: Job? = null
+    private var loaded = false
 
     init {
-        loadDetail()
-        loadReviewPreview()
-        loadWatchProviders()
         viewModelScope.launch {
             isWatchlisted(movieId).collect { watchlisted ->
                 updateState { copy(isWatchlisted = watchlisted) }
@@ -71,6 +69,14 @@ class DetailViewModel @AssistedInject constructor(
                 updateState { copy(userRating = rating) }
             }
         }
+    }
+
+    fun triggerLoad() {
+        if (loaded) return
+        loaded = true
+        loadDetail()
+        loadReviewPreview()
+        loadWatchProviders()
     }
 
     override fun handleAction(action: DetailAction) {

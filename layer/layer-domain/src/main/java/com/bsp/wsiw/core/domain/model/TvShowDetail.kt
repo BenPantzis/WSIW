@@ -1,5 +1,8 @@
 package com.bsp.wsiw.core.domain.model
 
+import androidx.compose.runtime.Stable
+
+@Stable
 data class TvShowDetail(
     val id: Int,
     val name: String,

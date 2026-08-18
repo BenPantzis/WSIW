@@ -54,7 +54,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.withResumed
 import coil.compose.AsyncImage
 import com.bsp.wsiw.core.domain.model.CastMember
 import com.bsp.wsiw.core.domain.model.Season
@@ -80,7 +82,10 @@ fun TvDetailScreen(
     onPersonClick: (Int) -> Unit,
     viewModel: TvDetailViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(seriesId) { viewModel.load(seriesId) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(seriesId, lifecycleOwner) {
+        lifecycleOwner.lifecycle.withResumed { viewModel.load(seriesId) }
+    }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -116,12 +121,13 @@ private fun CollapsingTvDetail(
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    val firstVisibleOffset by remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
-    val firstVisibleIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
-
-    val backdropHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { BackdropHeight.toPx() }
-    val scrolledPx = remember(firstVisibleIndex, firstVisibleOffset) {
-        if (firstVisibleIndex == 0) firstVisibleOffset.toFloat() else backdropHeightPx
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val backdropHeightPx = remember(density) { with(density) { BackdropHeight.toPx() } }
+    val scrolledPx by remember {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex == 0) listState.firstVisibleItemScrollOffset.toFloat()
+            else backdropHeightPx
+        }
     }
     val backdropAlpha = (1f - scrolledPx / backdropHeightPx).coerceIn(0f, 1f)
 

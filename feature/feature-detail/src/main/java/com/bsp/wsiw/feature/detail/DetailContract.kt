@@ -1,5 +1,6 @@
 package com.bsp.wsiw.feature.detail
 
+import androidx.compose.runtime.Stable
 import com.bsp.wsiw.core.domain.model.MovieDetail
 import com.bsp.wsiw.core.domain.model.Review
 import com.bsp.wsiw.core.domain.model.WatchProviders
@@ -20,6 +21,7 @@ sealed interface DetailEvent {
     data class RatingSubmitted(val rating: Float) : DetailEvent
 }
 
+@Stable
 data class DetailUiState(
     val isLoading: Boolean = true,
     val movie: MovieDetail? = null,

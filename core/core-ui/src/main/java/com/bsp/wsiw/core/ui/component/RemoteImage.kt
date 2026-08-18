@@ -3,7 +3,9 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun RemoteImage(
@@ -13,7 +15,10 @@ fun RemoteImage(
     contentScale: ContentScale = ContentScale.Fit,
 ) {
     AsyncImage(
-        model = url,
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .crossfade(300)
+            .build(),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,
