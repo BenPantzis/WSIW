@@ -855,33 +855,33 @@ private fun DetailLoadingContent(onBack: () -> Unit) {
                 .padding(horizontal = AppTheme.spacing.content, vertical = AppTheme.spacing.xl),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Box(modifier = Modifier.width(120.dp).height(16.dp).shimmerEffect(shimmerBrush))
-            Box(modifier = Modifier.fillMaxWidth(0.85f).height(32.dp).shimmerEffect(shimmerBrush))
-            Box(modifier = Modifier.fillMaxWidth(0.6f).height(16.dp).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.width(120.dp).height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.fillMaxWidth(0.85f).height(32.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.fillMaxWidth(0.6f).height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
             Spacer(Modifier.height(AppTheme.spacing.xs))
             Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm)) {
-                repeat(3) { Box(modifier = Modifier.width(72.dp).height(28.dp).shimmerEffect(shimmerBrush)) }
+                repeat(3) { Box(modifier = Modifier.width(72.dp).height(28.dp).clip(RoundedCornerShape(6.dp)).shimmerEffect(shimmerBrush)) }
             }
             Spacer(Modifier.height(AppTheme.spacing.sm))
             repeat(6) {
-                Box(modifier = Modifier.fillMaxWidth(if (it == 5) 0.7f else 1f).height(14.dp).shimmerEffect(shimmerBrush))
+                Box(modifier = Modifier.fillMaxWidth(if (it == 5) 0.7f else 1f).height(14.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
             }
             Spacer(Modifier.height(AppTheme.spacing.md))
-            Box(modifier = Modifier.fillMaxWidth().height(46.dp).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.fillMaxWidth().height(46.dp).clip(MaterialTheme.shapes.small).shimmerEffect(shimmerBrush))
             Spacer(Modifier.height(AppTheme.spacing.md))
-            Box(modifier = Modifier.width(60.dp).height(12.dp).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.width(60.dp).height(12.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
             Spacer(Modifier.height(AppTheme.spacing.xs))
             Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.md)) {
                 repeat(4) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(modifier = Modifier.size(56.dp).clip(CircleShape).shimmerEffect(shimmerBrush))
                         Spacer(Modifier.height(6.dp))
-                        Box(modifier = Modifier.width(60.dp).height(10.dp).shimmerEffect(shimmerBrush))
+                        Box(modifier = Modifier.width(60.dp).height(10.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
                     }
                 }
             }
             Spacer(Modifier.height(AppTheme.spacing.md))
-            Box(modifier = Modifier.width(80.dp).height(12.dp).shimmerEffect(shimmerBrush))
+            Box(modifier = Modifier.width(80.dp).height(12.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect(shimmerBrush))
             Spacer(Modifier.height(AppTheme.spacing.xs))
             Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.spacing.sm)) {
                 repeat(3) {
