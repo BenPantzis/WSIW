@@ -37,8 +37,11 @@ fun EntryProviderScope<NavKey>.loginCallbackDestination(
     }
 }
 
-fun EntryProviderScope<NavKey>.ratedMoviesDestination(onBack: () -> Unit) {
-    entry<RatedMoviesKey> {
+fun EntryProviderScope<NavKey>.ratedMoviesDestination(
+    metadata: Map<String, Any> = emptyMap(),
+    onBack: () -> Unit,
+) {
+    entry<RatedMoviesKey>(metadata = metadata) {
         RatedMoviesScreen(onBack = onBack)
     }
 }

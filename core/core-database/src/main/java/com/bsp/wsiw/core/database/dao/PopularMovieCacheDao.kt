@@ -8,14 +8,14 @@ import com.bsp.wsiw.core.database.entity.PopularMovieEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface PopularMovieCacheDao {
+abstract class PopularMovieCacheDao {
 
     @Query("SELECT * FROM popular_movies_cache WHERE page = :page ORDER BY id")
-    fun getByPage(page: Int): Flow<List<PopularMovieEntity>>
+    abstract fun getByPage(page: Int): Flow<List<PopularMovieEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(entities: List<PopularMovieEntity>)
+    abstract fun insertAll(entities: List<PopularMovieEntity>): List<Long>
 
     @Query("DELETE FROM popular_movies_cache WHERE page = :page")
-    fun deleteByPage(page: Int): Int
+    abstract fun deleteByPage(page: Int): Int
 }

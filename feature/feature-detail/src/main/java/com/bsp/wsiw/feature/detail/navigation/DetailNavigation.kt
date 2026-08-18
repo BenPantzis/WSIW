@@ -19,12 +19,13 @@ data class PersonKey(val personId: Int) : NavKey
 data class ReviewsKey(val movieId: Int, val movieTitle: String) : NavKey
 
 fun EntryProviderScope<NavKey>.detailDestination(
+    metadata: Map<String, Any> = emptyMap(),
     onBack: () -> Unit,
     onMovieClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
     onReviewsClick: (movieId: Int, movieTitle: String) -> Unit,
 ) {
-    entry<DetailKey> { key ->
+    entry<DetailKey>(metadata = metadata) { key ->
         DetailScreen(
             movieId = key.movieId,
             onBack = onBack,

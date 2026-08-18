@@ -8,23 +8,23 @@ import com.bsp.wsiw.core.database.entity.MovieDetailEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface MovieDetailCacheDao {
+abstract class MovieDetailCacheDao {
 
     @Query("SELECT * FROM movie_detail_cache WHERE id = :movieId")
-    fun getById(movieId: Int): Flow<MovieDetailEntity?>
+    abstract fun getById(movieId: Int): Flow<MovieDetailEntity?>
 
     @Query("SELECT * FROM movie_detail_cache WHERE id = :movieId")
-    fun getByIdSync(movieId: Int): MovieDetailEntity?
+    abstract fun getByIdSync(movieId: Int): MovieDetailEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(entity: MovieDetailEntity)
+    abstract fun insert(entity: MovieDetailEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIfAbsent(entity: MovieDetailEntity)
+    abstract fun insertIfAbsent(entity: MovieDetailEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertAllIfAbsent(entities: List<MovieDetailEntity>)
+    abstract fun insertAllIfAbsent(entities: List<MovieDetailEntity>): List<Long>
 
     @Query("DELETE FROM movie_detail_cache WHERE id = :movieId")
-    fun deleteById(movieId: Int): Int
+    abstract fun deleteById(movieId: Int): Int
 }

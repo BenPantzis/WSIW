@@ -21,11 +21,12 @@ fun EntryProviderScope<NavKey>.tvListDestination(
 }
 
 fun EntryProviderScope<NavKey>.tvDetailDestination(
+    metadata: Map<String, Any> = emptyMap(),
     onBack: () -> Unit,
     onShowClick: (Int) -> Unit,
     onPersonClick: (Int) -> Unit,
 ) {
-    entry<TvDetailKey> { key ->
+    entry<TvDetailKey>(metadata = metadata) { key ->
         TvDetailScreen(
             seriesId = key.seriesId,
             onBack = onBack,

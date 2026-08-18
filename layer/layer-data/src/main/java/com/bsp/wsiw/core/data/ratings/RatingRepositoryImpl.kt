@@ -85,7 +85,8 @@ class RatingRepositoryImpl @Inject constructor(
         }
         val detailSnapshots = movies.map { it.toMinimalDetailEntity() }
         withContext(Dispatchers.IO) {
-            dao.replaceAll(entities)
+            dao.deleteAll()
+            dao.insertAll(entities)
             movieDetailDao.insertAllIfAbsent(detailSnapshots)
         }
     }

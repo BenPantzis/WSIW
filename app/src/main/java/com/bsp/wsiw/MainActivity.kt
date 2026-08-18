@@ -53,6 +53,7 @@ import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.metadata
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.bsp.wsiw.core.ui.theme.WSIWTheme
@@ -235,6 +236,20 @@ private fun WsiwApp(
         backStack.add(RatedMoviesKey)
     }
 
+    val slideMetadata = remember {
+        metadata {
+            put(NavDisplay.TransitionKey) {
+                (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
+            }
+            put(NavDisplay.PopTransitionKey) {
+                EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
+            }
+            put(NavDisplay.PredictivePopTransitionKey) { _: Int ->
+                EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
@@ -253,33 +268,9 @@ private fun WsiwApp(
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
-            transitionSpec = {
-                if (targetState.entries.lastOrNull()?.contentKey.let {
-                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
-                    }) {
-                    (slideInHorizontally { it } + fadeIn()) togetherWith ExitTransition.None
-                } else {
-                    fadeIn() togetherWith fadeOut()
-                }
-            },
-            popTransitionSpec = {
-                if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
-                    }) {
-                    EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
-                } else {
-                    fadeIn() togetherWith fadeOut()
-                }
-            },
-            predictivePopTransitionSpec = {
-                if (initialState.entries.lastOrNull()?.contentKey.let {
-                        it is DetailKey || it is TvDetailKey || it is RatedMoviesKey
-                    }) {
-                    EnterTransition.None togetherWith (slideOutHorizontally { it } + fadeOut())
-                } else {
-                    fadeIn() togetherWith fadeOut()
-                }
-            },
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            popTransitionSpec = { fadeIn() togetherWith fadeOut() },
+            predictivePopTransitionSpec = { _ -> fadeIn() togetherWith fadeOut() },
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(),
@@ -296,7 +287,7 @@ private fun WsiwApp(
                     onBrowseMovies = { navigateToTab(HomeKey) },
                 )
                 profileDestination(onSeeAllRatings = ::navigateToRatedMovies)
-                ratedMoviesDestination(onBack = { backStack.removeLastOrNull() })
+                ratedMoviesDestination(metadata = slideMetadata, onBack = { backStack.removeLastOrNull() })
                 loginCallbackDestination(
                     onSuccess = {
                         backStack.removeLastOrNull()
@@ -305,6 +296,7 @@ private fun WsiwApp(
                     onBack = { backStack.removeLastOrNull() },
                 )
                 detailDestination(
+                    metadata = slideMetadata,
                     onBack = { backStack.removeLastOrNull() },
                     onMovieClick = ::navigateToDetail,
                     onPersonClick = ::navigateToPerson,
@@ -316,6 +308,7 @@ private fun WsiwApp(
                 )
                 tvListDestination(onShowClick = ::navigateToTvDetail)
                 tvDetailDestination(
+                    metadata = slideMetadata,
                     onBack = { backStack.removeLastOrNull() },
                     onShowClick = ::navigateToTvDetail,
                     onPersonClick = ::navigateToPerson,

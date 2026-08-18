@@ -18,7 +18,7 @@ lifecycleViewmodelNav3 = "2.11.0-beta02"
 kotlinxSerializationCore = "1.9.0"
 
 # --- Compose ---
-composeBom = "2026.08.00"
+composeBom = "2026.02.01"
 
 # --- DI ---
 hilt = "2.59.2"
@@ -29,7 +29,7 @@ retrofit = "2.11.0"
 okhttp = "4.12.0"
 
 # --- Local storage ---
-room = "2.6.1"
+room = "2.7.0"
 datastore = "1.1.1"
 
 # --- Async ---
@@ -39,7 +39,7 @@ coroutines = "1.9.0"
 timber = "5.0.1"
 
 # --- Image loading ---
-coil = "3.5.0"
+coil = "2.7.0"
 
 # --- Palette ---
 palette = "1.0.0"
@@ -116,8 +116,7 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 # Image loading
-coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # Material Icons (via Compose BOM — no version)
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
